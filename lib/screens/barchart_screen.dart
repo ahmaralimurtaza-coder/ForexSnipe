@@ -1,98 +1,69 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
+import 'webview_screen.dart';
 
 class BarchartScreen extends StatelessWidget {
   const BarchartScreen({super.key});
 
-  final _cotLinks = const [
-    {'label': 'EUR/USD COT Chart',  'sub': 'Euro vs US Dollar — CFTC weekly',        'url': 'https://www.barchart.com/forex/cot-reports/EUR'},
-    {'label': 'GBP/USD COT Chart',  'sub': 'British Pound — CFTC weekly',             'url': 'https://www.barchart.com/forex/cot-reports/GBP'},
-    {'label': 'USD/JPY COT Chart',  'sub': 'Japanese Yen — CFTC weekly',              'url': 'https://www.barchart.com/forex/cot-reports/JPY'},
-    {'label': 'AUD/USD COT Chart',  'sub': 'Australian Dollar — CFTC weekly',         'url': 'https://www.barchart.com/forex/cot-reports/AUD'},
-    {'label': 'USD/CAD COT Chart',  'sub': 'Canadian Dollar — CFTC weekly',           'url': 'https://www.barchart.com/forex/cot-reports/CAD'},
-    {'label': 'NZD/USD COT Chart',  'sub': 'New Zealand Dollar — CFTC weekly',        'url': 'https://www.barchart.com/forex/cot-reports/NZD'},
-    {'label': 'All Forex COT Data', 'sub': 'Complete forex COT table + download',     'url': 'https://www.barchart.com/futures/commitment-of-traders'},
-    {'label': 'Legacy COT Report',  'sub': 'Commercial vs Non-Commercial net',        'url': 'https://www.barchart.com/futures/legacy-cot-reports'},
-    {'label': 'Disaggregated COT',  'sub': 'Managed Money · Swap Dealers · Producers','url': 'https://www.barchart.com/futures/disaggregated-cot-reports'},
-    {'label': 'TFF Financial COT',  'sub': 'Dealer · Asset Mgr · Leveraged Funds',   'url': 'https://www.barchart.com/futures/tff-cot-reports'},
+  final _links = const [
+    ['EUR/USD COT', 'https://www.barchart.com/forex/cot-reports/6E'],
+    ['GBP/USD COT', 'https://www.barchart.com/forex/cot-reports/6B'],
+    ['USD/JPY COT', 'https://www.barchart.com/forex/cot-reports/6J'],
+    ['AUD/USD COT', 'https://www.barchart.com/forex/cot-reports/6A'],
+    ['USD/CAD COT', 'https://www.barchart.com/forex/cot-reports/6C'],
+    ['NZD/USD COT', 'https://www.barchart.com/forex/cot-reports/6N'],
+    ['Gold COT',    'https://www.barchart.com/futures/cot-reports/GC'],
+    ['Silver COT',  'https://www.barchart.com/futures/cot-reports/SI'],
+    ['Crude Oil COT','https://www.barchart.com/futures/cot-reports/CL'],
+    ['S&P 500 COT', 'https://www.barchart.com/futures/cot-reports/ES'],
   ];
+
+  Future<void> _launch(BuildContext context, String url, String title) async {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => WebViewScreen(url: url, title: title)));
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionHeader(label: 'Barchart.com', title: 'COT Charts &', titleAccent: 'Data'),
-          GlowCard(
-            glowColor: AppColors.gold,
-            padding: const EdgeInsets.all(18),
+          const SectionHeader(label: 'Barchart.com · Updated Every Friday', title: 'COT', titleAccent: 'Charts'),
+          GlowCard(glowColor: AppColors.gold, padding: const EdgeInsets.all(18),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                const Text('📊', style: TextStyle(fontSize: 28)),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('BARCHART.COM', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 1,
-                      color: isDark ? AppColors.gold : const Color(0xFFCC8800))),
-                  Text('Free COT Charts & Historical Data', style: TextStyle(fontSize: 12,
-                      color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
-                ])),
-              ]),
-              const SizedBox(height: 14),
-              _FeatureRow('✅ COT charts updated every Friday at 3pm CT'),
-              _FeatureRow('✅ Legacy, Disaggregated & TFF report types'),
-              _FeatureRow('✅ 52-week high/low net positions'),
-              _FeatureRow('✅ Forex-specific COT section'),
-              _FeatureRow('✅ Free CSV download available'),
-              _FeatureRow('⚠️ OnDemand API = Paid (use CFTC direct for free)'),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
+              Text('MAIN COT REPORT', style: TextStyle(fontSize: 10, letterSpacing: 2, fontWeight: FontWeight.w700, color: AppColors.gold)),
+              const SizedBox(height: 12),
+              SizedBox(width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _launch('https://www.barchart.com/forex/cot-reports'),
-                  icon: const Icon(Icons.open_in_browser, size: 16),
-                  label: const Text('Open Barchart Forex COT'),
+                  onPressed: () => _launch(context, 'https://www.barchart.com/forex/cot-reports', 'Barchart COT Reports'),
+                  icon: const Icon(Icons.bar_chart, size: 18),
+                  label: const Text('Open Barchart COT Reports'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? AppColors.gold : const Color(0xFFCC8800),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: AppColors.gold, foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                ),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 20),
-          Text('QUICK LINKS', style: TextStyle(fontSize: 10, letterSpacing: 2.5, fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.cyan : const Color(0xFF0088AA))),
-          const SizedBox(height: 12),
-          ..._cotLinks.map((l) => Padding(
+                )),
+            ])),
+          const SizedBox(height: 16),
+          const SectionHeader(label: 'Quick Links', title: 'Pair', titleAccent: 'Charts'),
+          ..._links.map((link) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: GestureDetector(
-              onTap: () => _launch(l['url']!),
+              onTap: () => _launch(context, link[1], link[0]),
               child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.navyCard : AppColors.lightCard,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: isDark ? AppColors.navyBorder : AppColors.lightBorder),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(children: [
-                  Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(color: AppColors.gold.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.bar_chart, color: AppColors.gold, size: 20),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(l['label']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    Text(l['sub']!,   style: TextStyle(fontSize: 11, color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
-                  ])),
-                  Icon(Icons.chevron_right, color: isDark ? AppColors.mutedDark : AppColors.mutedLight),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text(link[0], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  const Icon(Icons.open_in_new, size: 16, color: AppColors.gold),
                 ]),
               ),
             ),
@@ -100,15 +71,5 @@ class BarchartScreen extends StatelessWidget {
         ]),
       ),
     );
-  }
-
-  Widget _FeatureRow(String text) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 3),
-    child: Text(text, style: const TextStyle(fontSize: 12, height: 1.4)),
-  );
-
-  void _launch(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

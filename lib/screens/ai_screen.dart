@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
 
@@ -8,730 +8,155 @@ class AiScreen extends StatefulWidget {
 }
 
 class _AiScreenState extends State<AiScreen> {
-  final _controller = TextEditingController();
-  final _scroll     = ScrollController();
-
+  final _ctrl   = TextEditingController();
+  final _scroll = ScrollController();
   final List<_Msg> _messages = [
-    _Msg(
-      role: 'ai',
-      text: "🎯 Assalam u Alaikum! I'm **Forex Sniper** — your AI Market Analyst.\n\n"
-          "I'm trained to help you:\n"
-          "• 📊 Analyze COT report signals\n"
-          "• 💱 Explain currency pair movements\n"
-          "• 📈 Read market sentiment correctly\n"
-          "• 📅 Understand economic events impact\n"
-          "• 🛢️ Track commodities & indices\n"
-          "• ₿ Analyze crypto market trends\n\n"
-          "Ask me anything — I snipe the best trades! 🎯",
-    ),
+    _Msg(text: 'Hello! I am your ForexSnipe AI Analyst. Ask me about forex pairs, COT data, market sentiment, economic events, or trading strategies.', isUser: false),
   ];
-
   bool _loading = false;
 
-  final _suggestions = const [
-    '🎯 Snipe EUR/USD setup',
-    '📊 COT signal for Gold',
-    '💡 Best trade this week?',
-    '📈 Why is USD rising?',
-    '₿ Bitcoin outlook today',
-    '🛢️ Oil price analysis',
-    '📅 NFP impact on USD',
-    '🔍 COT vs Sentiment',
+  final _suggestions = [
+    'What does COT data tell us?',
+    'Explain EUR/USD outlook',
+    'What is NFP impact on USD?',
+    'How to read sentiment data?',
+    'What is hawkish vs dovish?',
+    'Explain support and resistance',
   ];
 
-  String _getResponse(String q) {
-    final ql = q.toLowerCase();
-
-    if (ql.contains('cot') && (ql.contains('eur') || ql.contains('euro'))) {
-      return "🎯 **Forex Sniper COT Analysis — EUR/USD**\n\n"
-          "Latest CFTC Data:\n\n"
-          "🟢 Non-Commercial (Hedge Funds): NET LONG\n"
-          "   → Speculators bullish on EUR\n\n"
-          "🔴 Commercial Hedgers: NET SHORT\n"
-          "   → Banks hedging long exposure\n\n"
-          "🟡 Small Traders: Neutral\n\n"
-          "📊 **Sniper Signal: BULLISH EUR/USD**\n\n"
-          "When hedge funds increase net longs week-over-week → trend confirmation. "
-          "Watch for reversal when positions reach historic extremes.\n\n"
-          "🎯 Sniper Entry Zone: Look for pullbacks to support!";
-    }
-
-    if (ql.contains('cot') && (ql.contains('gold') || ql.contains('xau'))) {
-      return "🎯 **Forex Sniper COT Analysis — XAU/USD (Gold)**\n\n"
-          "Latest CFTC Data:\n\n"
-          "🟢 Non-Commercial: +284,200 LONG positions\n"
-          "🔴 Commercial Hedgers: NET SHORT (hedging)\n"
-          "📊 Bullish %: ~74% — approaching extreme\n\n"
-          "⚠️ **Sniper Warning:**\n"
-          "When retail + non-commercial both extremely long → "
-          "smart money (commercials) positioning short.\n\n"
-          "🎯 **Sniper Strategy:**\n"
-          "Wait for pullback. If COT net longs decrease next week → "
-          "possible reversal signal. Strong support at previous week low.";
-    }
-
-    if (ql.contains('nfp') || ql.contains('non-farm') || ql.contains('payroll')) {
-      return "🎯 **Forex Sniper — NFP Playbook**\n\n"
-          "Non-Farm Payrolls = Most explosive USD event!\n\n"
-          "📈 **Better than Expected:**\n"
-          "→ USD strengthens immediately\n"
-          "→ EUR/USD drops, GBP/USD drops\n"
-          "→ USD/JPY rises sharply\n"
-          "→ Gold (XAU/USD) falls\n\n"
-          "📉 **Worse than Expected:**\n"
-          "→ USD weakens across board\n"
-          "→ AUD/USD, NZD/USD rise\n"
-          "→ Gold rallies\n\n"
-          "🎯 **Sniper Tip:**\n"
-          "NEVER enter right at release — spread explodes!\n"
-          "Wait 3-5 minutes for volatility to settle.\n"
-          "Then snipe the continuation move. 🎯";
-    }
-
-    if (ql.contains('hawkish') || ql.contains('fed') || ql.contains('interest rate')) {
-      return "🎯 **Forex Sniper — Fed & Interest Rates**\n\n"
-          "🏦 **Hawkish Fed = Strong USD:**\n\n"
-          "Hawkish = Fed wants HIGHER rates\n\n"
-          "Effect on markets:\n"
-          "• USD/JPY: ⬆️ RISES\n"
-          "• EUR/USD: ⬇️ FALLS\n"
-          "• GBP/USD: ⬇️ FALLS\n"
-          "• XAU/USD: ⬇️ FALLS (gold no interest)\n"
-          "• Crypto:  ⬇️ Usually falls\n\n"
-          "🕊️ **Dovish Fed = Weak USD:**\n"
-          "• EUR/USD: ⬆️ RISES\n"
-          "• Gold:    ⬆️ RALLIES\n"
-          "• Crypto:  ⬆️ Often rises\n\n"
-          "🎯 **Sniper Rule:**\n"
-          "Trade WITH the central bank — not against it!";
-    }
-
-    if (ql.contains('sentiment')) {
-      return "🎯 **Forex Sniper — Sentiment Analysis**\n\n"
-          "Retail sentiment = CONTRARIAN indicator!\n\n"
-          "📊 **How to Read It:**\n\n"
-          "If 75%+ retail = LONG →\n"
-          "🎯 Smart money likely SHORT\n"
-          "→ Sniper looks for SHORT opportunities\n\n"
-          "If 75%+ retail = SHORT →\n"
-          "🎯 Smart money likely LONG\n"
-          "→ Sniper looks for LONG opportunities\n\n"
-          "⚠️ **Extreme Readings (Most Powerful):**\n"
-          "• >80% one direction = high probability reversal\n"
-          "• Combine with COT for confirmation\n"
-          "• Check economic calendar for catalyst\n\n"
-          "🎯 **Sniper Formula:**\n"
-          "COT Signal + Extreme Sentiment + Key Level = SNIPE! 🎯";
-    }
-
-    if (ql.contains('commercial') || ql.contains('non-commercial') || ql.contains('cot')) {
-      return "🎯 **Forex Sniper — COT Breakdown**\n\n"
-          "Three groups in COT report:\n\n"
-          "🏢 **Commercials (Smart Money):**\n"
-          "• Banks, corporations, exporters\n"
-          "• Hedge real business risk\n"
-          "• Usually OPPOSITE to trend\n"
-          "• When extreme → near reversal\n\n"
-          "🐋 **Non-Commercials (Whales):**\n"
-          "• Hedge funds, large speculators\n"
-          "• Trade for PROFIT\n"
-          "• Follow the trend\n"
-          "• Their direction = trend direction\n\n"
-          "🐟 **Small Traders (Retail):**\n"
-          "• Us — retail traders!\n"
-          "• Often wrong at extremes\n"
-          "• Use as contrarian signal\n\n"
-          "🎯 **Sniper Signal:**\n"
-          "Non-Commercial increasing longs + "
-          "Commercial increasing shorts = "
-          "Strong BULLISH trend! 🎯";
-    }
-
-    if (ql.contains('bitcoin') || ql.contains('btc') || ql.contains('crypto')) {
-      return "🎯 **Forex Sniper — Bitcoin/Crypto Analysis**\n\n"
-          "Current Market Structure:\n\n"
-          "📊 **Key Levels to Watch:**\n"
-          "• BTC resistance: \$70,000 psychological\n"
-          "• BTC support: \$60,000 key zone\n\n"
-          "📈 **Bullish Factors:**\n"
-          "• ETF institutional inflows\n"
-          "• Post-halving supply reduction\n"
-          "• Risk-on market sentiment\n\n"
-          "📉 **Bearish Risks:**\n"
-          "• Fed hawkish = crypto sells off\n"
-          "• Regulatory concerns\n"
-          "• Whale distribution\n\n"
-          "🎯 **Sniper Strategy:**\n"
-          "Wait for weekly close above resistance.\n"
-          "Strong close = buy the retest.\n"
-          "Risk 1% per trade maximum! 🎯";
-    }
-
-    if (ql.contains('gold') || ql.contains('xau')) {
-      return "🎯 **Forex Sniper — Gold Analysis**\n\n"
-          "Gold (XAU/USD) Key Drivers:\n\n"
-          "📈 **Bullish for Gold:**\n"
-          "• USD weakness\n"
-          "• Geopolitical tensions\n"
-          "• Inflation fears\n"
-          "• Fed rate cut expectations\n"
-          "• Central bank buying\n\n"
-          "📉 **Bearish for Gold:**\n"
-          "• Strong USD\n"
-          "• Rising real yields\n"
-          "• Risk-on sentiment\n"
-          "• Fed hawkish policy\n\n"
-          "📊 **COT Signal:**\n"
-          "Hedge funds hold large net longs → \n"
-          "Bullish trend intact but watch for extreme!\n\n"
-          "🎯 **Sniper Level:**\n"
-          "Key support: \$2,300 zone\n"
-          "Break above \$2,400 = new highs! 🎯";
-    }
-
-    if (ql.contains('oil') || ql.contains('crude') || ql.contains('wti')) {
-      return "🎯 **Forex Sniper — Oil Analysis**\n\n"
-          "WTI Crude Oil Key Factors:\n\n"
-          "📈 **Bullish for Oil:**\n"
-          "• OPEC+ production cuts\n"
-          "• US inventory drawdown\n"
-          "• Geopolitical risk (Middle East)\n"
-          "• Strong global demand\n\n"
-          "📉 **Bearish for Oil:**\n"
-          "• US inventory build\n"
-          "• Recession fears\n"
-          "• OPEC+ output increase\n"
-          "• Strong USD\n\n"
-          "📊 **EIA Data:**\n"
-          "Watch Wednesday 10:30am ET — \n"
-          "Crude Oil Inventories = biggest oil mover!\n\n"
-          "🎯 **Sniper Tip:**\n"
-          "CAD strongly correlated with oil.\n"
-          "Oil up → USD/CAD falls! 🎯";
-    }
-
-    if (ql.contains('snipe') || ql.contains('setup') || ql.contains('trade')) {
-      return "🎯 **Forex Sniper — Trade Setup Checklist**\n\n"
-          "Before ANY trade, check:\n\n"
-          "✅ 1. COT Report\n"
-          "   → Are hedge funds on your side?\n\n"
-          "✅ 2. Market Sentiment\n"
-          "   → Is retail extreme? (contrarian)\n\n"
-          "✅ 3. Economic Calendar\n"
-          "   → Any high impact news coming?\n\n"
-          "✅ 4. Technical Level\n"
-          "   → Key support/resistance zone?\n\n"
-          "✅ 5. Risk Management\n"
-          "   → Max 1-2% risk per trade\n\n"
-          "✅ 6. Trend Direction\n"
-          "   → Trade WITH the trend!\n\n"
-          "🎯 **Sniper Rule:**\n"
-          "All 6 aligned = SNIPE THE TRADE!\n"
-          "Missing any = STAY OUT! 🎯";
-    }
-
-    if (ql.contains('usd') || ql.contains('dollar')) {
-      return "🎯 **Forex Sniper — USD Analysis**\n\n"
-          "US Dollar key drivers:\n\n"
-          "📊 **USD Strengthens when:**\n"
-          "• Fed is hawkish (rate hikes)\n"
-          "• US economic data beats\n"
-          "• Risk-off sentiment (safe haven)\n"
-          "• NFP beats expectations\n"
-          "• CPI higher than expected\n\n"
-          "📊 **USD Weakens when:**\n"
-          "• Fed dovish (rate cuts expected)\n"
-          "• US data disappoints\n"
-          "• Risk-on (markets rallying)\n"
-          "• NFP misses expectations\n\n"
-          "🎯 **Sniper Watch:**\n"
-          "DXY (Dollar Index) above 105 = USD strong\n"
-          "DXY below 100 = USD weak\n"
-          "Trade EUR/USD OPPOSITE to DXY! 🎯";
-    }
-
-    if (ql.contains('best trade') || ql.contains('this week') || ql.contains('opportunity')) {
-      return "🎯 **Forex Sniper — This Week's Opportunities**\n\n"
-          "Based on current market analysis:\n\n"
-          "💱 **Forex:**\n"
-          "• EUR/USD: Watch Fed commentary\n"
-          "• USD/JPY: BOJ policy key level\n"
-          "• GBP/USD: UK data dependent\n\n"
-          "🥇 **Commodities:**\n"
-          "• Gold: Safe haven demand strong\n"
-          "• Oil: OPEC decision pending\n\n"
-          "₿ **Crypto:**\n"
-          "• BTC: Institutional flows positive\n"
-          "• ETH: Network upgrade bullish\n\n"
-          "📈 **Indices:**\n"
-          "• S&P 500: Earnings season key\n"
-          "• Tech heavy — NVDA leads\n\n"
-          "🎯 **Sniper Priority:**\n"
-          "1st → Check COT tab\n"
-          "2nd → Check Calendar tab\n"
-          "3rd → Check Sentiment tab\n"
-          "Then SNIPE! 🎯";
-    }
-
-    // Default response
-    return "🎯 **Forex Sniper is analyzing...**\n\n"
-        "Based on current market conditions:\n\n"
-        "📊 **Market Overview:**\n"
-        "• Forex: EUR/USD bullish bias (COT)\n"
-        "• Crypto: BTC consolidating\n"
-        "• Gold: Safe haven demand active\n"
-        "• Indices: Cautious — watch Fed\n\n"
-        "💡 **Ask me specifically about:**\n"
-        "• A currency pair (EUR/USD, GBP/USD)\n"
-        "• COT analysis for any market\n"
-        "• Economic event impact\n"
-        "• Trade setup checklist\n"
-        "• Sentiment reading\n\n"
-        "🎯 I'm Forex Sniper — precision is my game!";
-  }
-
-  void _send() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
+  void _send(String text) {
+    if (text.trim().isEmpty) return;
     setState(() {
-      _messages.add(_Msg(role: 'user', text: text));
+      _messages.add(_Msg(text: text, isUser: true));
       _loading = true;
     });
-    _controller.clear();
+    _ctrl.clear();
     _scrollDown();
-    await Future.delayed(const Duration(milliseconds: 1400));
-    setState(() {
-      _messages.add(_Msg(role: 'ai', text: _getResponse(text)));
-      _loading = false;
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+      setState(() {
+        _messages.add(_Msg(text: _getResponse(text), isUser: false));
+        _loading = false;
+      });
+      _scrollDown();
     });
-    _scrollDown();
   }
 
   void _scrollDown() {
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scroll.hasClients) {
-        _scroll.animateTo(
-          _scroll.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     });
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _scroll.dispose();
-    super.dispose();
+  String _getResponse(String q) {
+    final t = q.toLowerCase();
+    if (t.contains('cot') && t.contains('eur')) return 'EUR/USD COT: Non-commercials (hedge funds) are net LONG EUR. This is bullish for EUR/USD. Watch for extreme readings above 150K net longs as a potential reversal signal. Commercials are typically opposite — they hedge their exposure.';
+    if (t.contains('cot')) return 'COT (Commitments of Traders) report is released every Friday by CFTC. Key groups:\n\n• Non-Commercials (Hedge Funds): Trend followers — most important for direction\n• Commercials: Hedgers — opposite to trend\n• Small Traders: Retail — contrarian at extremes\n\nWatch for extreme net positions as reversal signals.';
+    if (t.contains('nfp') || t.contains('non-farm')) return 'NFP (Non-Farm Payrolls) is the most important USD event:\n\n• Released first Friday of each month\n• Beat forecast → USD bullish\n• Miss forecast → USD bearish\n• Average impact: 50-80 pips on major pairs\n\nTrade the revision + current number together for best signal.';
+    if (t.contains('hawkish') || t.contains('dovish')) return 'Central bank stance:\n\n🦅 HAWKISH = Wants to raise rates\n• Fights inflation\n• Bullish for currency\n• Example: Fed hiking rates → USD bullish\n\n🕊️ DOVISH = Wants to cut rates\n• Stimulates economy\n• Bearish for currency\n• Example: ECB cutting → EUR bearish';
+    if (t.contains('sentiment')) return 'Retail sentiment is a CONTRARIAN indicator:\n\n• 75%+ retail LONG → Smart money likely SHORT\n• 75%+ retail SHORT → Smart money likely LONG\n\nWhy? Retail traders are usually wrong at extremes. When everyone is long, there is no one left to buy — price must fall.\n\nCombine with COT data for confirmation.';
+    if (t.contains('eur') || t.contains('eurusd')) return 'EUR/USD Analysis:\n\n• Trend: Bearish short-term (USD strength)\n• Key support: 1.0800\n• Key resistance: 1.0950\n• COT: Funds net long EUR — watch for reversal\n• Sentiment: 58% retail long — slightly contrarian bearish\n• Key events: ECB rate decision, US CPI data';
+    if (t.contains('support') || t.contains('resistance')) return 'Support & Resistance:\n\n📊 Support = Price floor where buyers step in\n📊 Resistance = Price ceiling where sellers appear\n\nHow to find them:\n• Previous highs/lows\n• Round numbers (1.0800, 1.1000)\n• 50/200 day moving averages\n• Fibonacci levels (38.2%, 61.8%)\n\nStronger when tested multiple times.';
+    if (t.contains('gold') || t.contains('xau')) return 'Gold (XAU/USD) Analysis:\n\n• Safe haven — rises on uncertainty\n• Inverse correlation with USD\n• Key drivers: Fed policy, inflation, geopolitics\n• COT: Funds heavily long gold — bullish\n• Key levels: Support 2300, Resistance 2400\n• Seasonality: Strong in Q1 and Q3';
+    if (t.contains('bitcoin') || t.contains('btc') || t.contains('crypto')) return 'Bitcoin Analysis:\n\n• Post-halving cycle — historically bullish 12-18 months\n• Institutional adoption via ETFs driving demand\n• Key support: 60,000 - 62,000\n• Key resistance: 72,000 - 75,000\n• Correlation with risk assets (Nasdaq)\n• Watch: Fed policy, ETF flows, on-chain data';
+    return 'Great question! As your ForexSnipe AI Analyst, I analyze:\n\n📊 COT positioning data\n💱 Forex pair technicals\n📰 Market news sentiment\n📅 Economic calendar impact\n🎯 Trading setups\n\nAsk me about specific pairs, indicators, or market events for detailed analysis!';
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark  = Theme.of(context).brightness == Brightness.dark;
-    final primary = AppColors.green;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Column(children: [
-
-        // ── Header ──
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-            // Analyst card
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.navyCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.green.withOpacity(0.4)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.green.withOpacity(0.1),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Row(children: [
-                // Avatar
-                Container(
-                  width: 52, height: 52,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.green.withOpacity(0.15),
-                    border: Border.all(color: AppColors.green, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.green.withOpacity(0.3),
-                        blurRadius: 12,
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('🎯', style: TextStyle(fontSize: 26)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [
-                    Text('Forex Sniper',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.green,
-                          letterSpacing: 0.5,
-                        )),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.green.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.green.withOpacity(0.4)),
-                      ),
-                      child: const Text('AI ANALYST',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.green,
-                            letterSpacing: 1,
-                          )),
-                    ),
-                  ]),
-                  const SizedBox(height: 3),
-                  Text('Precision Market Intelligence',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? AppColors.mutedDark : AppColors.mutedLight,
-                      )),
-                  const SizedBox(height: 4),
-                  Row(children: [
-                    const LiveDot(),
-                    const SizedBox(width: 6),
-                    Text('Online — Ready to Snipe',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.green,
-                          fontWeight: FontWeight.w500,
-                        )),
-                  ]),
-                ])),
-              ]),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Suggestion chips
-            SizedBox(
-              height: 34,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _suggestions.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (ctx, i) => GestureDetector(
-                  onTap: () {
-                    _controller.text = _suggestions[i]
-                        .replaceAll('🎯 ', '')
-                        .replaceAll('📊 ', '')
-                        .replaceAll('💡 ', '')
-                        .replaceAll('📈 ', '')
-                        .replaceAll('₿ ', '')
-                        .replaceAll('🛢️ ', '')
-                        .replaceAll('📅 ', '')
-                        .replaceAll('🔍 ', '');
-                    _send();
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        Padding(padding: const EdgeInsets.fromLTRB(16,16,16,0),
+          child: const SectionHeader(label: 'AI-Powered Market Intelligence', title: 'AI', titleAccent: 'Analyst')),
+        Expanded(child: ListView.builder(
+          controller: _scroll,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: _messages.length + (_loading ? 1 : 0),
+          itemBuilder: (ctx, i) {
+            if (i == _messages.length) return _TypingIndicator();
+            final msg = _messages[i];
+            return Padding(padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!msg.isUser) Container(width: 32, height: 32, margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.green.withOpacity(0.2), border: Border.all(color: AppColors.green.withOpacity(0.4))),
+                    child: const Center(child: Text('🤖', style: TextStyle(fontSize: 16)))),
+                  Flexible(child: Container(
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.navyCard : AppColors.lightCard,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: isDark ? AppColors.navyBorder : AppColors.lightBorder),
+                      color: msg.isUser ? AppColors.green : (isDark ? AppColors.navyCard : AppColors.lightCard),
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16), topRight: const Radius.circular(16),
+                        bottomLeft: Radius.circular(msg.isUser ? 16 : 4),
+                        bottomRight: Radius.circular(msg.isUser ? 4 : 16),
+                      ),
+                      border: msg.isUser ? null : Border.all(color: isDark ? AppColors.navyBorder : AppColors.lightBorder),
                     ),
-                    child: Text(_suggestions[i],
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark ? AppColors.mutedDark : AppColors.mutedLight,
-                        )),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-          ]),
-        ),
-
-        // ── Chat messages ──
-        Expanded(
-          child: ListView.builder(
-            controller: _scroll,
+                    child: Text(msg.text, style: TextStyle(fontSize: 13, height: 1.6, color: msg.isUser ? Colors.white : null)),
+                  )),
+                ],
+              ));
+          },
+        )),
+        // Suggestions
+        if (_messages.length <= 2)
+          SizedBox(height: 44, child: ListView.separated(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _messages.length + (_loading ? 1 : 0),
-            itemBuilder: (ctx, i) {
-              if (i == _messages.length) return _TypingIndicator();
-              return _ChatBubble(msg: _messages[i]);
-            },
-          ),
-        ),
-
-        // ── Input bar ──
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.navyCard : AppColors.lightCard,
-            border: Border(
-                top: BorderSide(
-                    color: isDark ? AppColors.navyBorder : AppColors.lightBorder)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(children: [
-            // Sniper icon
-            Container(
-              width: 36, height: 36,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.green.withOpacity(0.1),
-                border: Border.all(color: AppColors.green.withOpacity(0.3)),
-              ),
-              child: const Center(child: Text('🎯', style: TextStyle(fontSize: 18))),
-            ),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                onSubmitted: (_) => _send(),
-                decoration: InputDecoration(
-                  hintText: 'Ask Forex Sniper anything...',
-                  hintStyle: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? AppColors.mutedDark : AppColors.mutedLight,
-                  ),
-                  filled: true,
-                  fillColor: isDark ? AppColors.navyCard2 : AppColors.lightCard2,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                ),
-                style: const TextStyle(fontSize: 13),
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: _send,
+            itemCount: _suggestions.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) => GestureDetector(
+              onTap: () => _send(_suggestions[i]),
               child: Container(
-                width: 44, height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.green,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.green.withOpacity(0.4),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(color: AppColors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.green.withOpacity(0.3))),
+                child: Text(_suggestions[i], style: const TextStyle(fontSize: 12, color: AppColors.green, fontWeight: FontWeight.w500)),
+              )),
+          )),
+        const SizedBox(height: 8),
+        Padding(padding: const EdgeInsets.fromLTRB(16,0,16,16),
+          child: Row(children: [
+            Expanded(child: TextField(
+              controller: _ctrl,
+              onSubmitted: _send,
+              decoration: InputDecoration(
+                hintText: 'Ask about forex, COT, crypto...',
+                hintStyle: TextStyle(color: isDark ? AppColors.mutedDark : AppColors.mutedLight, fontSize: 13),
+                filled: true,
+                fillColor: isDark ? AppColors.navyCard : AppColors.lightCard,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide(color: isDark ? AppColors.navyBorder : AppColors.lightBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide(color: isDark ? AppColors.navyBorder : AppColors.lightBorder)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.green, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               ),
+            )),
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: () => _send(_ctrl.text),
+              child: Container(width: 46, height: 46,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.green, boxShadow: [BoxShadow(color: AppColors.green.withOpacity(0.4), blurRadius: 10)]),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20)),
             ),
-          ]),
-        ),
+          ])),
       ]),
     );
   }
 }
 
-class _Msg {
-  final String role, text;
-  const _Msg({required this.role, required this.text});
-}
+class _Msg { final String text; final bool isUser; const _Msg({required this.text, required this.isUser}); }
 
-class _ChatBubble extends StatelessWidget {
-  final _Msg msg;
-  const _ChatBubble({required this.msg});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isAi   = msg.role == 'ai';
-
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: 14,
-        left:  isAi ? 0 : 50,
-        right: isAi ? 50 : 0,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (isAi) ...[
-            // Forex Sniper avatar
-            Container(
-              width: 34, height: 34,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.green.withOpacity(0.15),
-                border: Border.all(color: AppColors.green.withOpacity(0.5)),
-              ),
-              child: const Center(child: Text('🎯', style: TextStyle(fontSize: 17))),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-              isAi ? CrossAxisAlignment.start : CrossAxisAlignment.end,
-              children: [
-                // Name label for AI
-                if (isAi)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4, left: 2),
-                    child: Text('Forex Sniper',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.green,
-                          letterSpacing: 0.3,
-                        )),
-                  ),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isAi
-                        ? (isDark ? AppColors.navyCard : AppColors.lightCard)
-                        : AppColors.green,
-                    borderRadius: BorderRadius.only(
-                      topLeft:     Radius.circular(isAi ? 2 : 14),
-                      topRight:    Radius.circular(isAi ? 14 : 2),
-                      bottomLeft:  const Radius.circular(14),
-                      bottomRight: const Radius.circular(14),
-                    ),
-                    border: isAi
-                        ? Border.all(
-                        color: isDark
-                            ? AppColors.navyBorder
-                            : AppColors.lightBorder)
-                        : null,
-                    boxShadow: isAi ? [
-                      BoxShadow(
-                        color: AppColors.green.withOpacity(0.05),
-                        blurRadius: 8,
-                      ),
-                    ] : null,
-                  ),
-                  child: Text(
-                    msg.text,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.6,
-                      color: isAi
-                          ? (isDark ? AppColors.textDark : AppColors.textLight)
-                          : Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TypingIndicator extends StatefulWidget {
-  @override State<_TypingIndicator> createState() => _TypingIndicatorState();
-}
-
-class _TypingIndicatorState extends State<_TypingIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-  }
-
+class _TypingIndicator extends StatefulWidget { @override State<_TypingIndicator> createState() => _TypingIndicatorState(); }
+class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerProviderStateMixin {
+  late AnimationController _c; late Animation<double> _a;
+  @override void initState() { super.initState(); _c=AnimationController(vsync:this,duration:const Duration(milliseconds:800))..repeat(reverse:true); _a=CurvedAnimation(parent:_c,curve:Curves.easeInOut); }
   @override void dispose() { _c.dispose(); super.dispose(); }
-
   @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 34, height: 34,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.green.withOpacity(0.15),
-              border: Border.all(color: AppColors.green.withOpacity(0.5)),
-            ),
-            child: const Center(child: Text('🎯', style: TextStyle(fontSize: 17))),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4, left: 2),
-                child: Text('Forex Sniper',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.green,
-                    )),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.navyCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                      color: isDark ? AppColors.navyBorder : AppColors.lightBorder),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🎯 Sniping the answer',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? AppColors.mutedDark : AppColors.mutedLight,
-                          fontStyle: FontStyle.italic,
-                        )),
-                    const SizedBox(width: 8),
-                    ...List.generate(3, (i) => AnimatedBuilder(
-                      animation: _c,
-                      builder: (_, __) => Container(
-                        width: 6, height: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.green.withOpacity(
-                              i == 0 ? _c.value
-                                  : i == 1 ? (_c.value * 0.7)
-                                  : (_c.value * 0.4)),
-                        ),
-                      ),
-                    )),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.only(bottom:12),
+    child: Row(children: [
+      Container(width:32,height:32,margin:const EdgeInsets.only(right:8),decoration:BoxDecoration(shape:BoxShape.circle,color:AppColors.green.withOpacity(0.2),border:Border.all(color:AppColors.green.withOpacity(0.4))),child:const Center(child:Text('🤖',style:TextStyle(fontSize:16)))),
+      AnimatedBuilder(animation:_a,builder:(_,__)=>Row(children:List.generate(3,(i)=>Container(width:8,height:8,margin:const EdgeInsets.only(right:4),decoration:BoxDecoration(shape:BoxShape.circle,color:AppColors.green.withOpacity(0.3+0.7*_a.value)))))),
+    ]));
 }

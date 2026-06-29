@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
@@ -27,7 +27,7 @@ class AppTheme {
     brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.navy,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.cyan,
+      primary: AppColors.green,
       secondary: AppColors.gold,
       surface: AppColors.navyCard,
       error: AppColors.red,
@@ -39,17 +39,14 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.navy,
       elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.cyan),
+      iconTheme: IconThemeData(color: AppColors.green),
       titleTextStyle: TextStyle(
-        color: AppColors.textDark,
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.5,
+        color: AppColors.textDark, fontSize: 18,
+        fontWeight: FontWeight.w700, letterSpacing: 0.5,
       ),
     ),
     cardTheme: const CardThemeData(
-      color: AppColors.navyCard,
-      elevation: 0,
+      color: AppColors.navyCard, elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(14)),
         side: BorderSide(color: AppColors.navyBorder),
@@ -63,7 +60,7 @@ class AppTheme {
     brightness: Brightness.light,
     scaffoldBackgroundColor: AppColors.lightBg,
     colorScheme: const ColorScheme.light(
-      primary: Color(0xFF0088AA),
+      primary: Color(0xFF00AA55),
       secondary: Color(0xFFCC8800),
       surface: AppColors.lightCard,
       error: AppColors.red,
@@ -75,17 +72,14 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.lightCard,
       elevation: 0,
-      iconTheme: IconThemeData(color: Color(0xFF0088AA)),
+      iconTheme: IconThemeData(color: Color(0xFF00AA55)),
       titleTextStyle: TextStyle(
-        color: AppColors.textLight,
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.5,
+        color: AppColors.textLight, fontSize: 18,
+        fontWeight: FontWeight.w700, letterSpacing: 0.5,
       ),
     ),
     cardTheme: const CardThemeData(
-      color: AppColors.lightCard,
-      elevation: 0,
+      color: AppColors.lightCard, elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(14)),
         side: BorderSide(color: AppColors.lightBorder),

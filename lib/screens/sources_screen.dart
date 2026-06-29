@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../models/sample_data.dart';
@@ -68,7 +68,7 @@ class SourcesScreen extends StatelessWidget {
               ]),
               const SizedBox(height: 8),
               Text(
-                'ForexIQ is for educational and informational purposes only. This app does not provide financial advice. Always do your own research before trading. Forex trading carries significant risk.',
+                'ForexSnipe is for educational and informational purposes only. This app does not provide financial advice. Always do your own research before trading. Forex trading carries significant risk.',
                 style: TextStyle(fontSize: 11,
                     color: isDark ? AppColors.mutedDark : AppColors.mutedLight,
                     height: 1.5),
@@ -122,7 +122,7 @@ class _SourceCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // ── App ke andar WebView mein khulega ──
+        // â”€â”€ App ke andar WebView mein khulega â”€â”€
         Navigator.push(
           context,
           MaterialPageRoute(
