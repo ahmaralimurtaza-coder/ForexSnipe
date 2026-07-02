@@ -1,4 +1,4 @@
-import 'models.dart';
+﻿import 'models.dart';
 
 class SampleData {
   static List<ForexPair> pairs = [
@@ -727,7 +727,7 @@ class SampleData {
         ]),
   ];
 
-  // ── NEWS ──
+  // â”€â”€ NEWS â”€â”€
   static List<NewsItem> news = [
     // Forex
     NewsItem(source: 'REUTERS',
@@ -939,7 +939,7 @@ class SampleData {
         url: 'https://oilprice.com',
         title: 'Crude oil futures decline on rising inventory data; traders await OPEC+ production call'),
   ];
-  // ── CALENDAR ──
+  // â”€â”€ CALENDAR â”€â”€
   static List<CalendarEvent> calendar = [
     // Forex
     CalendarEvent(time: '08:30', currency: 'USD', event: 'Core PCE Price Index m/m',  impact: 'HIGH', actual: '0.3%',   forecast: '0.2%',  previous: '0.1%',  isBetter: true,  category: 'Forex'),
@@ -984,7 +984,7 @@ class SampleData {
     CalendarEvent(time: '16:00', currency: 'CME',  event: 'VIX Futures Settlement',      impact: 'MED',  actual: '—',      forecast: '13.8',  previous: '14.2',  isBetter: null,  category: 'Futures'),
   ];
 
-  // ── COT DATA ──
+  // â”€â”€ COT DATA â”€â”€
   static List<CotData> cotData = [
     // Forex
     CotData(pair: 'EUR/USD', nonCommercialLong: 174820, nonCommercialShort: 112410, commercialLong: 98300,   commercialShort: 161500,  smallTraderLong: 42100,  smallTraderShort: 41310,  weekEnding: 'Jun 24, 2026', openInterest: 478000,  category: 'Forex'),
@@ -1017,7 +1017,7 @@ class SampleData {
     CotData(pair: 'NQ1! NAS',nonCommercialLong: 124200, nonCommercialShort: 84800,  commercialLong: 88400,   commercialShort: 128000,  smallTraderLong: 42400,  smallTraderShort: 42000,  weekEnding: 'Jun 24, 2026', openInterest: 510000,  category: 'Futures'),
   ];
 
-  // ── SENTIMENT ──
+  // â”€â”€ SENTIMENT â”€â”€
   static List<SentimentData> sentiment = [
     // Forex
     SentimentData(pair: 'EUR/USD',   longPct: 58.4, shortPct: 41.6, source: 'Myfxbook',  category: 'Forex'),
@@ -1062,19 +1062,23 @@ class SampleData {
     SentimentData(pair: 'ZB1! BOND', longPct: 42.8, shortPct: 57.2, source: 'CME',       category: 'Futures'),
   ];
 
-  // ── DATA SOURCES ──
+  // â”€â”€ DATA SOURCES â”€â”€
   static List<DataSource> sources = [
-    DataSource(icon: '🏛️', name: 'CFTC.GOV',      description: 'Official US government source for weekly COT reports. 100% free, no key required.',             tag: 'FREE · OFFICIAL', url: 'https://publicreporting.cftc.gov',       category: 'COT Data'),
-    DataSource(icon: '📡', name: 'FINNHUB',        description: 'Real-time forex, stocks, crypto quotes, news sentiment and technical indicators.',               tag: 'FREE API',        url: 'https://finnhub.io',                     category: 'Prices & News'),
-    DataSource(icon: '📈', name: 'ALPHA VANTAGE',  description: 'Historical OHLCV data for forex, stocks, crypto and economic indicators. 25 per day free.',     tag: 'FREE API',        url: 'https://alphavantage.co',                category: 'Historical Data'),
-    DataSource(icon: '⚡', name: 'TWELVE DATA',    description: 'Ultra-low latency streaming for forex, stocks, indices and crypto. 800 credits per day free.',   tag: 'FREE TIER',       url: 'https://twelvedata.com',                 category: 'Streaming'),
-    DataSource(icon: '📰', name: 'FOREXNEWSAPI',   description: 'Curated market news with AI sentiment for forex, stocks, crypto and commodities.',              tag: 'FREE TIER',       url: 'https://forexnewsapi.com',               category: 'News & Sentiment'),
-    DataSource(icon: '📅', name: 'ECON. CALENDAR', description: 'High-impact events: NFP, CPI, GDP, earnings, OPEC, crypto events. Updates every 5 minutes.',    tag: 'FREE API',        url: 'https://rapidapi.com',                   category: 'Calendar'),
-    DataSource(icon: '🌐', name: 'MYFXBOOK',       description: 'Retail trader sentiment, COT data, forex and commodities correlation and market hours.',         tag: 'FREE API',        url: 'https://myfxbook.com',                   category: 'Sentiment'),
-    DataSource(icon: '📊', name: 'BARCHART',       description: 'Free COT charts for forex, futures, commodities and indices. Updated every Friday.',             tag: 'FREE WEBSITE',    url: 'https://barchart.com/forex/cot-reports', category: 'COT Data'),
-    DataSource(icon: '💹', name: 'YAHOO FINANCE',  description: 'Free stock, ETF, index, crypto and commodity data. Widely used for historical price downloads.',  tag: 'FREE',            url: 'https://finance.yahoo.com',              category: 'Stocks & Indices'),
-    DataSource(icon: '₿',  name: 'COINDESK',       description: 'Real-time crypto news, prices, on-chain data and market analysis for all major coins.',          tag: 'FREE',            url: 'https://coindesk.com',                   category: 'Crypto News'),
-    DataSource(icon: '🛢️', name: 'EIA.GOV',        description: 'Official US Energy Information Administration — crude oil, gas and energy inventory data.',      tag: 'FREE · OFFICIAL', url: 'https://eia.gov',                        category: 'Commodities'),
-    DataSource(icon: '🤖', name: 'CLAUDE AI',       description: 'AI analyst by Anthropic — explains market moves, COT, earnings and news for all asset classes.',tag: 'AI POWERED',      url: 'https://anthropic.com',                  category: 'AI Analysis'),
+    DataSource(icon: '\u{1F3DB}\u{FE0F}', name: 'CFTC.GOV',      description: 'Official US government source for weekly COT reports. 100% free, no key required.',             tag: 'FREE . OFFICIAL', url: 'https://publicreporting.cftc.gov',       category: 'COT Data'),
+    DataSource(icon: '\u{1F4E1}', name: 'FINNHUB',        description: 'Real-time forex, stocks, crypto quotes, news sentiment and technical indicators.',               tag: 'FREE API',        url: 'https://finnhub.io',                     category: 'Prices & News'),
+    DataSource(icon: '\u{1F4C8}', name: 'ALPHA VANTAGE',  description: 'Historical OHLCV data for forex, stocks, crypto and economic indicators. 25 per day free.',     tag: 'FREE API',        url: 'https://alphavantage.co',                category: 'Historical Data'),
+    DataSource(icon: '\u{26A1}', name: 'TWELVE DATA',    description: 'Ultra-low latency streaming for forex, stocks, indices and crypto. 800 credits per day free.',   tag: 'FREE TIER',       url: 'https://twelvedata.com',                 category: 'Streaming'),
+    DataSource(icon: '\u{1F4F0}', name: 'FOREXNEWSAPI',   description: 'Curated market news with AI sentiment for forex, stocks, crypto and commodities.',              tag: 'FREE TIER',       url: 'https://forexnewsapi.com',               category: 'News & Sentiment'),
+    DataSource(icon: '\u{1F4C5}', name: 'ECON. CALENDAR', description: 'High-impact events: NFP, CPI, GDP, earnings, OPEC, crypto events. Updates every 5 minutes.',    tag: 'FREE API',        url: 'https://rapidapi.com',                   category: 'Calendar'),
+    DataSource(icon: '\u{1F310}', name: 'MYFXBOOK',       description: 'Retail trader sentiment, COT data, forex and commodities correlation and market hours.',         tag: 'FREE API',        url: 'https://myfxbook.com',                   category: 'Sentiment'),
+    DataSource(icon: '\u{1F4CA}', name: 'BARCHART',       description: 'Free COT charts for forex, futures, commodities and indices. Updated every Friday.',             tag: 'FREE WEBSITE',    url: 'https://barchart.com/forex/cot-reports', category: 'COT Data'),
+    DataSource(icon: '\u{1F4B9}', name: 'YAHOO FINANCE',  description: 'Free stock, ETF, index, crypto and commodity data. Widely used for historical price downloads.',  tag: 'FREE',            url: 'https://finance.yahoo.com',              category: 'Stocks & Indices'),
+    DataSource(icon: '\u{20BF}', name: 'COINDESK',       description: 'Real-time crypto news, prices, on-chain data and market analysis for all major coins.',          tag: 'FREE',            url: 'https://coindesk.com',                   category: 'Crypto News'),
+    DataSource(icon: '\u{1F6E2}\u{FE0F}', name: 'EIA.GOV',        description: 'Official US Energy Information Administration - crude oil, gas and energy inventory data.',      tag: 'FREE . OFFICIAL', url: 'https://eia.gov',                        category: 'Commodities'),
+    DataSource(icon: '\u{1F916}', name: 'CLAUDE AI',       description: 'AI analyst by Anthropic - explains market moves, COT, earnings and news for all asset classes.',tag: 'AI POWERED',      url: 'https://anthropic.com',                  category: 'AI Analysis'),
+    DataSource(icon: '\u{1F30D}', name: 'USGS EARTHQUAKES', description: 'Official US Geological Survey feed for real-time global earthquake data. Updates within minutes.', tag: 'FREE . OFFICIAL', url: 'https://earthquake.usgs.gov', category: 'World Monitor'),
+    DataSource(icon: '\u{1F525}', name: 'NASA EONET', description: 'NASA Earth Observatory natural event tracker - wildfires, storms, floods and sea ice globally.', tag: 'FREE . OFFICIAL', url: 'https://eonet.gsfc.nasa.gov', category: 'World Monitor'),
+    DataSource(icon: '\u{1F5FA}\u{FE0F}', name: 'GDELT PROJECT', description: 'Global news monitoring database indexing world events, conflicts and media coverage in real-time.', tag: 'FREE API', url: 'https://gdeltproject.org', category: 'World Monitor'),
   ];
 }
+

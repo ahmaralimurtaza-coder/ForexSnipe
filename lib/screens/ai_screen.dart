@@ -70,7 +70,7 @@ class _AiScreenState extends State<AiScreen> {
 
     // ═══ APP LIMITATIONS & DATA ACCURACY ═══
     if (t.contains('limitation') || t.contains('delay') || t.contains('accuracy') || t.contains('drawback') || t.contains('real time') || t.contains('realtime') || t.contains('live data') || t.contains('data source') || t.contains('how accurate') || t.contains('app info')) {
-      return 'ForexSnipe Data Sources & Limitations:\n\nPRICES TAB\n- Forex: 15-60 min delayed (ExchangeRate/Frankfurter APIs)\n- Crypto BTC/ETH: Real-time via Binance\n- Gold XAU/XAG: Near real-time via GoldAPI\n- Stocks/Indices: 15-min delayed via Yahoo Finance\n\nCOT TAB\n- Data from CFTC.gov, released every Friday\n- Always 1 week behind by design\n- Numbers accurate, directly from CFTC\n\nNEWS TAB\n- Auto-refreshes every 5 minutes\n- Sources: Reuters, Bloomberg, CNBC, Finnhub\n\nCALENDAR TAB\n- Finnhub API, refreshes every 15 minutes\n\nSENTIMENT TAB\n- Derived from COT data, same 1-week delay\n\nSOURCES TAB (Barchart Analysis)\n- Barchart Trader Cheat Sheet embedded\n- S/R levels, Pivots, Fibonacci, Moving Averages\n- Updated daily from Barchart.com\n\nWARNING: Use ForexSnipe for context only. Always verify on TradingView before trading.';
+      return 'ForexSnipe Data Sources & Limitations:\n\nPRICES TAB\n- Forex: 15-60 min delayed (ExchangeRate/Frankfurter APIs)\n- Crypto BTC/ETH: Real-time via Binance\n- Gold XAU/XAG: Near real-time via GoldAPI\n- Stocks/Indices: 15-min delayed via Yahoo Finance\n\nCOT TAB\n- Data from CFTC.gov, released every Friday\n- Always 1 week behind by design\n- Numbers accurate, directly from CFTC\n\nNEWS TAB\n- Auto-refreshes every 5 minutes\n- Sources: Reuters, Bloomberg, CNBC, Finnhub\n\nCALENDAR TAB\n- Finnhub API, refreshes every 15 minutes\n\nWORLD TAB\n- Earthquakes: USGS, real-time (within minutes)\n- Disasters: NASA EONET (wildfires, storms, sea ice), refreshes every 5 minutes\n- World Events: GDELT global news monitor, ~15 min delay\n\nSENTIMENT TAB\n- Derived from COT data, same 1-week delay\n\nSOURCES TAB (Barchart Analysis)\n- Barchart Trader Cheat Sheet embedded\n- S/R levels, Pivots, Fibonacci, Moving Averages\n- Updated daily from Barchart.com\n\nWARNING: Use ForexSnipe for context only. Always verify on TradingView before trading.';
     }
 
     // ═══ BARCHART BENEFITS ═══
@@ -382,6 +382,7 @@ class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerPro
       AnimatedBuilder(animation:_a,builder:(_,__)=>Row(children:List.generate(3,(i)=>Container(width:8,height:8,margin:const EdgeInsets.only(right:4),decoration:BoxDecoration(shape:BoxShape.circle,color:AppColors.green.withOpacity(0.3+0.7*_a.value)))))),
     ]));
 }
+
 
 
 

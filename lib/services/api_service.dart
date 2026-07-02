@@ -592,21 +592,28 @@ class ApiService {
     } catch (e) { print('Disasters: $e'); }
     return [];
   }
+  DateTime? _lastGdeltCall;
+  List<Map<String, dynamic>> _gdeltCache = [];
   Future<List<Map<String, dynamic>>> getGdeltEvents() async {
+    if (_lastGdeltCall != null && DateTime.now().difference(_lastGdeltCall!) < const Duration(minutes: 20)) {
+      return _gdeltCache;
+    }
     try {
       final url = 'https://api.gdeltproject.org/api/v2/doc/doc?query=sourcelang:eng%20(conflict%20OR%20protest%20OR%20crisis)&mode=artlist&maxrecords=20&format=json&sort=datedesc';
       final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
+      _lastGdeltCall = DateTime.now();
       if (res.statusCode == 200) {
         final body = utf8.decode(res.bodyBytes, allowMalformed: true);
-        if (!body.trim().startsWith('{')) { print('GDELT: non-json response (likely rate limited)'); return []; }
+        if (!body.trim().startsWith('{')) { print('GDELT: non-json response (likely rate limited)'); return _gdeltCache; }
         final data = json.decode(body);
         final arts = data['articles'] as List? ?? [];
-        return arts.map((a) => {
+        _gdeltCache = arts.map((a) => {
           'title': a['title'] ?? '',
           'url': a['url'] ?? '',
           'domain': a['domain'] ?? '',
           'seendate': a['seendate'] ?? '',
-        }).toList();
+        }).toList().cast<Map<String, dynamic>>();
+        return _gdeltCache;
       }
     } catch (e) { print('GDELT: $e'); }
     return [];

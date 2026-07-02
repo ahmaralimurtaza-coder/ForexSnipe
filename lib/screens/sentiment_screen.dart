@@ -70,7 +70,7 @@ class _SentimentScreenState extends State<SentimentScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionHeader(label: 'Myfxbook Â· IG Group Â· CME Â· Finviz', title: 'Market', titleAccent: 'Sentiment'),
+          const SectionHeader(label: 'Myfxbook · IG Group · CME · Finviz', title: 'Market', titleAccent: 'Sentiment'),
 
           // Category chips
           SizedBox(
@@ -279,6 +279,7 @@ class _SentimentCard extends StatelessWidget {
     );
   }
 }
+
 
 
 

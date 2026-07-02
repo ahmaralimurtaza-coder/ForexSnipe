@@ -45,7 +45,7 @@ class DataProvider extends ChangeNotifier {
   DateTime?           get lastUpdated => _lastUpdated;
   Map<String,bool>    get apiStatus   => _apiStatus;
 
-  Timer? _priceTimer, _newsTimer, _calendarTimer, _worldTimer;
+  Timer? _priceTimer, _newsTimer, _calendarTimer, _worldTimer, _cotTimer;
 
   Future<void> initialize() async {
     _isLoading = true;
@@ -75,6 +75,7 @@ class DataProvider extends ChangeNotifier {
     });
     _newsTimer     = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchAllNews());
     _worldTimer    = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchWorldEvents());
+    _cotTimer      = Timer.periodic(const Duration(minutes: 30), (_) => _fetchCot());
     _calendarTimer = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
   }
 
@@ -602,11 +603,15 @@ class DataProvider extends ChangeNotifier {
     _priceTimer?.cancel();
     _newsTimer?.cancel();
     _worldTimer?.cancel();
+    _cotTimer?.cancel();
     _calendarTimer?.cancel();
     _api.dispose();
     super.dispose();
   }
 }
+
+
+
 
 
 
