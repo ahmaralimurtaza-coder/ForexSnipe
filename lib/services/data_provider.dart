@@ -11,11 +11,11 @@ class DataProvider extends ChangeNotifier {
 
   List<ForexPair>     _pairs     = List.from(SampleData.pairs);
   List<NewsItem>      _news      = List.from(SampleData.news);
+  List<WorldEvent>    _worldEvents = [];
   List<CalendarEvent> _calendar  = List.from(SampleData.calendar);
   List<CotData>       _cotData   = List.from(SampleData.cotData);
   List<SentimentData> _sentiment = List.from(SampleData.sentiment);
 
-  // Previous prices store karo change % ke liye
   Map<String, double> _prevPrices = {};
   bool      _isLoading = false;
   DateTime? _lastUpdated;
@@ -28,28 +28,37 @@ class DataProvider extends ChangeNotifier {
 
   List<ForexPair>     get pairs       => _pairs;
   List<NewsItem>      get news        => _news;
+  List<WorldEvent>    get worldEvents => _worldEvents;
   List<CalendarEvent> get calendar    => _calendar;
   List<CotData>       get cotData     => _cotData;
-  List<SentimentData> get sentiment   => _sentiment;
+  List<SentimentData> get sentiment   => _cotData.map((c) {
+    final totalLong  = c.nonCommercialLong + c.commercialLong + c.smallTraderLong;
+    final totalShort = c.nonCommercialShort + c.commercialShort + c.smallTraderShort;
+    final total      = totalLong + totalShort;
+    final longPct    = total > 0 ? (totalLong / total * 100) : 50.0;
+    return SentimentData(
+      pair: c.pair, longPct: longPct, shortPct: 100 - longPct,
+      source: 'CFTC COT', category: c.category,
+    );
+  }).toList();
   bool                get isLoading   => _isLoading;
   DateTime?           get lastUpdated => _lastUpdated;
   Map<String,bool>    get apiStatus   => _apiStatus;
 
-  Timer? _priceTimer, _newsTimer, _calendarTimer;
+  Timer? _priceTimer, _newsTimer, _calendarTimer, _worldTimer;
 
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
-    // Save initial prices as previous
     for (final p in _pairs) { _prevPrices[p.pair] = p.price; }
     try {
       await Future.wait([
         _fetchForex(), _fetchCrypto(), _fetchAllNews(),
-        _fetchCalendar(), _fetchCot(),
+        _fetchCalendar(), _fetchCot(), _fetchWorldEvents(),
       ]);
       await Future.wait([_fetchIndices(), _fetchCommodities(), _fetchFutures()]);
       _fetchStocks();
-    } catch (e) { print('Init error: '); }
+    } catch (e) { print('Init error: $e'); }
     _isLoading = false;
     _lastUpdated = DateTime.now();
     notifyListeners();
@@ -58,25 +67,21 @@ class DataProvider extends ChangeNotifier {
 
   void _startTimers() {
     _priceTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      for (final p in _pairs) { _prevPrices[p.pair] = p.price; }
       await Future.wait([
         _fetchForex(), _fetchCrypto(),
         _fetchIndices(), _fetchCommodities(), _fetchFutures(),
       ]);
     });
     _newsTimer     = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchAllNews());
+    _worldTimer    = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchWorldEvents());
     _calendarTimer = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
   }
 
   Future<void> _fetchForex() async {
     try {
-      var rates = await _api.getForexRates();
-      if (rates.isEmpty) {
-        final fixer = await _api.getFixerRates();
-        if (fixer.isNotEmpty) {
-          final eu = fixer['USD'] ?? 1.0;
-          rates = fixer.map((k, v) => MapEntry(k, v / eu));
-        }
-      }
+      // Uses CurrencyFreaks (1 min) -> Frankfurter -> ExchangeRate cascade
+      final rates = await _api.getBestForexRates();
       if (rates.isEmpty) return;
 
       _pairs = _pairs.map((p) {
@@ -99,18 +104,17 @@ class DataProvider extends ChangeNotifier {
         final prev   = _prevPrices[p.pair] ?? p.price;
         final change = np - prev;
         final chgPct = prev > 0 ? (change / prev) * 100 : 0.0;
-        final spark  = [...p.spark.skip(1), np];
         return ForexPair(
           pair: p.pair, flag: p.flag, price: np,
           change: change, changePct: chgPct, isUp: change >= 0,
-          spark: spark, category: p.category,
+          spark: [...p.spark.skip(1), np], category: p.category,
         );
       }).toList();
 
       _apiStatus['forex'] = true;
       _lastUpdated = DateTime.now();
       notifyListeners();
-    } catch (e) { print('Forex: '); }
+    } catch (e) { print('Forex: $e'); }
   }
 
   Future<void> _fetchCrypto() async {
@@ -126,25 +130,23 @@ class DataProvider extends ChangeNotifier {
       };
       _pairs = _pairs.map((p) {
         if (p.category != 'Crypto') return p;
-        final id = cm[p.pair];
-        if (id == null) return _jitter(p);
-        final d = crypto[id] as Map<String, dynamic>?;
+        final d = crypto[p.pair] as Map<String, dynamic>?;
         if (d == null) return _jitter(p);
-        final price  = (d['price']     as num).toDouble();
-        final chgPct = (d['changePct'] as num).toDouble();
-        final change = (d['change']    as num).toDouble();
-        final raw    = d['sparkline']  as List<double>;
+        final price  = (d['price']     as num?)?.toDouble() ?? p.price;
+        final chgPct = (d['changePct'] as num?)?.toDouble() ?? 0.0;
+        final change = (d['change']    as num?)?.toDouble() ?? 0.0;
+        final raw    = (d['sparkline'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? <double>[];
         final spark  = raw.length > 10 ? raw.sublist(raw.length - 10) : raw;
         return ForexPair(
           pair: p.pair, flag: p.flag, price: price,
           change: change, changePct: chgPct, isUp: chgPct >= 0,
-          spark: List<double>.from(spark.isEmpty ? [...p.spark.skip(1), price] : spark),
+          spark: spark.isEmpty ? [...p.spark.skip(1), price] : spark,
           category: p.category,
         );
       }).toList();
       _apiStatus['crypto'] = true;
       notifyListeners();
-    } catch (e) { print('Crypto: '); }
+    } catch (e) { print('Crypto: $e'); }
   }
 
   Future<void> _fetchIndices() async {
@@ -158,7 +160,7 @@ class DataProvider extends ChangeNotifier {
       }).toList();
       _apiStatus['indices'] = true;
       notifyListeners();
-    } catch (e) { print('Indices: '); }
+    } catch (e) { print('Indices: $e'); }
   }
 
   Future<void> _fetchStocks() async {
@@ -184,7 +186,7 @@ class DataProvider extends ChangeNotifier {
           }).toList();
           notifyListeners();
         }
-      } catch (e) { print('Stock (): '); }
+      } catch (e) { print('Stock (): $e'); }
       await Future.delayed(const Duration(milliseconds: 300));
     }
     _apiStatus['stocks'] = true;
@@ -193,16 +195,38 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> _fetchCommodities() async {
     try {
+      // getCommoditiesData() already merges GoldAPI (XAU/XAG real-time) + Yahoo (oil/gas/etc)
       final data = await _api.getCommoditiesData();
       if (data.isEmpty) return;
       _pairs = _pairs.map((p) {
         if (p.category != 'Commodities') return p;
         final d = data[p.pair];
-        return d == null ? _jitter(p) : _makeYahoo(p, d);
+        if (d == null) return _jitter(p);
+        final prev   = _prevPrices[p.pair] ?? p.price;
+        final price  = (d['price'] as num?)?.toDouble() ?? p.price;
+        // For GoldAPI items, changePct already comes from API; for Yahoo items too.
+        final apiChgPct = (d['changePct'] as num?)?.toDouble();
+        final change = price - prev;
+        final chgPct = apiChgPct != null && apiChgPct != 0
+            ? apiChgPct
+            : (prev > 0 ? (change / prev) * 100 : 0.0);
+        final raw = d['spark'] as List?;
+        List<double> spark;
+        if (raw != null && raw.isNotEmpty) {
+          spark = raw.map((e) => (e as num).toDouble()).toList();
+          if (spark.length > 10) spark = spark.sublist(spark.length - 10);
+        } else {
+          spark = [...p.spark.skip(1), price];
+        }
+        return ForexPair(
+          pair: p.pair, flag: p.flag, price: price,
+          change: change, changePct: chgPct, isUp: change >= 0,
+          spark: spark, category: p.category,
+        );
       }).toList();
       _apiStatus['commodities'] = true;
       notifyListeners();
-    } catch (e) { print('Commodities: '); }
+    } catch (e) { print('Commodities: $e'); }
   }
 
   Future<void> _fetchFutures() async {
@@ -216,26 +240,53 @@ class DataProvider extends ChangeNotifier {
       }).toList();
       _apiStatus['futures'] = true;
       notifyListeners();
-    } catch (e) { print('Futures: '); }
+    } catch (e) { print('Futures: $e'); }
   }
 
   Future<void> _fetchAllNews() async {
     try {
+      final results = await Future.wait([
+        _api.getReutersNews(),
+        _api.getMarketWatchNews(),
+        _api.getCnbcNews(),
+        _api.getInvestingNews('forex'),
+        _api.getInvestingNews('crypto'),
+        _api.getInvestingNews('stocks'),
+        _api.getInvestingNews('commodities'),
+        _api.getFinnhubNews('forex'),
+        _api.getFinnhubNews('crypto'),
+        _api.getFinnhubNews('general'),
+        _api.getFinnhubCompanyNews('AAPL'),
+        _api.getStockNews(),
+        _api.getIndicesNews(),
+        _api.getCommodityNews(),
+        _api.getMediastackForexNews(),
+        _api.getMediastackCryptoNews(),
+        _api.getMediastackCommodityNews(),
+      ]);
       final all = <NewsItem>[];
-      all.addAll(_parseFinnhub(await _api.getFinnhubNews('forex'),       'Forex'));
-      all.addAll(_parseFinnhub(await _api.getFinnhubNews('crypto'),      'Crypto'));
-      all.addAll(_parseFinnhub(await _api.getFinnhubNews('general'),     'Indices'));
-      all.addAll(_parseFinnhub(await _api.getFinnhubCompanyNews('AAPL'), 'Stocks'));
-      all.addAll(_parseNewsApi(await _api.getStockNews(),                'Stocks'));
-      all.addAll(_parseNewsApi(await _api.getIndicesNews(),              'Indices'));
-      all.addAll(_parseNewsApi(await _api.getCommodityNews(),            'Commodities'));
-      all.addAll(_parseNewsApi(await _api.getFuturesNews(),              'Futures'));
-      all.addAll(_parseMedia(await _api.getMediastackForexNews(),        'Forex'));
-      all.addAll(_parseMedia(await _api.getMediastackCryptoNews(),       'Crypto'));
-      all.addAll(_parseMedia(await _api.getMediastackCommodityNews(),    'Commodities'));
-      final seen = <String>{};
+      all.addAll(_parseRss(results[0],      'Forex'));
+      all.addAll(_parseRss(results[1],      'Stocks'));
+      all.addAll(_parseRss(results[2],      'Indices'));
+      all.addAll(_parseRss(results[3],      'Forex'));
+      all.addAll(_parseRss(results[4],      'Crypto'));
+      all.addAll(_parseRss(results[5],      'Stocks'));
+      all.addAll(_parseRss(results[6],      'Commodities'));
+      all.addAll(_parseRss(results[7],  'Forex'));
+      all.addAll(_parseRss(results[8],  'Crypto'));
+      all.addAll(_parseRss(results[9],  'Indices'));
+      all.addAll(_parseRss(results[10], 'Stocks'));
+      all.addAll(_parseRss(results[11], 'Stocks'));
+      all.addAll(_parseRss(results[12], 'Indices'));
+      all.addAll(_parseRss(results[13], 'Commodities'));
+      all.addAll(_parseRss(results[14],   'Forex'));
+      all.addAll(_parseRss(results[15],   'Crypto'));
+      all.addAll(_parseRss(results[16],   'Commodities'));
+      all.addAll(_parseRss(results[13], 'Futures'));
+      all.addAll(_parseRss(results[2],  'Futures'));
+      final seen   = <String>{};
       final unique = all.where((n) {
-        final k = n.title.length > 40 ? n.title.substring(0, 40) : n.title;
+        final k = n.category + (n.title.length > 40 ? n.title.substring(0, 40) : n.title);
         if (seen.contains(k)) return false;
         seen.add(k);
         return n.title.isNotEmpty;
@@ -245,7 +296,82 @@ class DataProvider extends ChangeNotifier {
         _apiStatus['news'] = true;
         notifyListeners();
       }
-    } catch (e) { print('News: '); }
+    } catch (e) { print('News: $e'); }
+  }
+
+  Future<void> _fetchWorldEvents() async {
+    try {
+      final results = await Future.wait([_api.getEarthquakes(), _api.getDisasters(), _api.getGdeltEvents()]);
+      final quakes    = results[0];
+      final disasters = results[1];
+      final gdelt      = results[2];
+      final events = <WorldEvent>[];
+      for (final q in quakes) {
+        final mag = (q['mag'] as num?)?.toDouble();
+        final ms  = q['time'] as int?;
+        DateTime? dt;
+        if (ms != null) dt = DateTime.fromMillisecondsSinceEpoch(ms);
+        events.add(WorldEvent(
+          title: q['title'] ?? '',
+          source: 'USGS',
+          category: 'Earthquake',
+          timeAgo: dt != null ? _ago(dt) : 'recent',
+          url: q['url'] ?? '',
+          magnitude: mag,
+          lat: (q['lat'] as num?)?.toDouble(),
+          lon: (q['lon'] as num?)?.toDouble(),
+        ));
+      }
+      for (final d in disasters) {
+        DateTime? dt;
+        try { dt = DateTime.parse(d['date'] ?? ''); } catch (_) {}
+        events.add(WorldEvent(
+          title: d['title'] ?? '',
+          source: 'NASA EONET',
+          category: d['category'] ?? 'Event',
+          timeAgo: dt != null ? _ago(dt) : 'recent',
+          url: d['url'] ?? '',
+          lat: (d['lat'] as num?)?.toDouble(),
+          lon: (d['lon'] as num?)?.toDouble(),
+        ));
+      }
+      for (final g in gdelt) {
+        final title = g['title'] as String? ?? '';
+        if (title.isEmpty) continue;
+        DateTime? dt;
+        try {
+          final sd = g['seendate'] as String? ?? '';
+          if (sd.length >= 8) {
+            dt = DateTime.parse('${sd.substring(0,4)}-${sd.substring(4,6)}-${sd.substring(6,8)}');
+          }
+        } catch (_) {}
+        events.add(WorldEvent(
+          title: title,
+          source: g['domain'] ?? 'GDELT',
+          category: 'World',
+          timeAgo: dt != null ? _ago(dt) : 'recent',
+          url: g['url'] ?? '',
+        ));
+      }
+      if (events.isNotEmpty) {
+        _worldEvents = events;
+        notifyListeners();
+      }
+    } catch (e) { print('WorldEvents: $e'); }
+  }
+  List<NewsItem> _parseRss(List<Map<String, dynamic>> raw, String cat) {
+    return raw.map((item) {
+      final t   = item['title']       as String? ?? '';
+      final src = item['source']      as String? ?? 'RSS';
+      final url = item['url']         as String? ?? '';
+      final pub = item['publishedAt'] as String? ?? '';
+      DateTime? dt; try { dt = DateTime.parse(pub); } catch (_) {}
+      return NewsItem(
+        source: src, title: t,
+        timeAgo:   dt != null ? _ago(dt) : 'recent',
+        sentiment: _sent(t), pairs: _det(t, cat), url: url, category: cat,
+      );
+    }).where((n) => n.title.isNotEmpty).toList();
   }
 
   Future<void> _fetchCalendar() async {
@@ -290,7 +416,7 @@ class DataProvider extends ChangeNotifier {
         _apiStatus['calendar'] = true;
         notifyListeners();
       }
-    } catch (e) { print('Calendar: '); }
+    } catch (e) { print('Calendar: $e'); }
   }
 
   Future<void> _fetchCot() async {
@@ -315,7 +441,7 @@ class DataProvider extends ChangeNotifier {
         _apiStatus['cot'] = true;
         notifyListeners();
       }
-    } catch (e) { print('COT: '); }
+    } catch (e) { print('COT: $e'); }
   }
 
   List<CotData> _parseCot(List<Map<String,dynamic>> raw, String category, Map<String,String> nameMap) {
@@ -341,7 +467,7 @@ class DataProvider extends ChangeNotifier {
           weekEnding:         item['report_date_as_yyyy_mm_dd']?.toString() ?? '',
           category:           category,
         ));
-      } catch (e) { print('COT parse: '); }
+      } catch (e) { print('COT parse: $e'); }
     }
     return result;
   }
@@ -392,11 +518,11 @@ class DataProvider extends ChangeNotifier {
 
   String _ago(DateTime dt) {
     final d = DateTime.now().difference(dt);
-    if (d.inMinutes < 60) return 'm ago';
-    if (d.inHours   < 24) return 'h ago';
-    return 'd ago';
+    if (d.inMinutes < 1)  return 'just now';
+    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
+    if (d.inHours   < 24) return '${d.inHours}h ago';
+    return '${d.inDays}d ago';
   }
-
   String _sent(String t) {
     final s = t.toLowerCase();
     const bull = ['surge','rise','gain','bull','beat','jump','rally','soar','boost','high','strong','record','advance'];
@@ -460,12 +586,11 @@ class DataProvider extends ChangeNotifier {
   Future<void> refresh() async {
     _isLoading = true;
     notifyListeners();
-    // Update previous prices before refresh
     for (final p in _pairs) { _prevPrices[p.pair] = p.price; }
     await Future.wait([
       _fetchForex(), _fetchCrypto(), _fetchIndices(),
       _fetchCommodities(), _fetchFutures(),
-      _fetchAllNews(), _fetchCalendar(),
+      _fetchAllNews(), _fetchCalendar(), _fetchWorldEvents(),
     ]);
     _isLoading   = false;
     _lastUpdated = DateTime.now();
@@ -476,8 +601,21 @@ class DataProvider extends ChangeNotifier {
   void dispose() {
     _priceTimer?.cancel();
     _newsTimer?.cancel();
+    _worldTimer?.cancel();
     _calendarTimer?.cancel();
     _api.dispose();
     super.dispose();
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

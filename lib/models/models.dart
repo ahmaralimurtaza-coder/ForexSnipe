@@ -78,3 +78,13 @@ class DataSource {
     required this.url, required this.category,
   });
 }
+
+class WorldEvent {
+  final String title, source, category, timeAgo, url;
+  final double? magnitude, lat, lon;
+  WorldEvent({
+    required this.title, required this.source,
+    required this.category, required this.timeAgo,
+    this.url = '', this.magnitude, this.lat, this.lon,
+  });
+}

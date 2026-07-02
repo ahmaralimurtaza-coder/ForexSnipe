@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import '../services/data_provider.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../models/sample_data.dart';
@@ -17,8 +19,8 @@ class _NewsScreenState extends State<NewsScreen> {
   final _categories = ['Forex','Indices','Stocks','Crypto','Commodities','Futures'];
   final _sentiments = ['ALL','bullish','bearish','neutral'];
 
-  List<NewsItem> get _filtered {
-    var list = SampleData.news.where((n) => n.category == _category).toList();
+  List<NewsItem> _filteredFrom(List<NewsItem> source) {
+    var list = source.where((n) => n.category == _category).toList();
     if (_sentiment != 'ALL') list = list.where((n) => n.sentiment == _sentiment).toList();
     return list;
   }
@@ -37,20 +39,21 @@ class _NewsScreenState extends State<NewsScreen> {
 
   String _catEmoji(String cat) {
     switch (cat) {
-      case 'Forex':       return '💱';
-      case 'Indices':     return '📈';
-      case 'Stocks':      return '🏢';
-      case 'Crypto':      return '₿';
-      case 'Commodities': return '🛢️';
-      case 'Futures':     return '🔮';
-      default:            return '📊';
+      case 'Forex':       return '\u{1F4B1}';
+      case 'Indices':     return '\u{1F4C8}';
+      case 'Stocks':      return '\u{1F3E2}';
+      case 'Crypto':      return '\u{20BF}';
+      case 'Commodities': return '\u{1F6E2}';
+      case 'Futures':     return '\u{1F52E}';
+      default:            return '\u{1F4CA}';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final filtered = _filtered;
+    final dp       = context.watch<DataProvider>();
+    final filtered = _filteredFrom(dp.news);
     final color    = _catColor(_category);
 
     return Scaffold(
@@ -204,3 +207,10 @@ class _NewsCard extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+

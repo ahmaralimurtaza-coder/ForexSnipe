@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../models/sample_data.dart';
 import '../widgets/common_widgets.dart';
 import '../services/data_provider.dart';
+import 'pair_detail_screen.dart';
 
 class PricesScreen extends StatefulWidget {
   const PricesScreen({super.key});
@@ -14,6 +15,7 @@ class PricesScreen extends StatefulWidget {
 
 class _PricesScreenState extends State<PricesScreen> {
   String _category = 'Forex';
+  int _selectedIndex = 0;
   final _categories = ['Forex','Indices','Stocks','Crypto','Commodities','Futures'];
 
   Color _catColor(String cat) {
@@ -52,6 +54,10 @@ class _PricesScreenState extends State<PricesScreen> {
     if (p.price >= 100)   return p.price.toStringAsFixed(2);
     if (p.price >= 1)     return p.price.toStringAsFixed(4);
     return p.price.toStringAsFixed(5);
+  }
+
+  void _openDetail(ForexPair p) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => PairDetailScreen(pair: p)));
   }
 
   @override
@@ -103,7 +109,7 @@ class _PricesScreenState extends State<PricesScreen> {
                       final sel = cat == _category;
                       final cc  = _catColor(cat);
                       return GestureDetector(
-                        onTap: () => setState(() => _category = cat),
+                        onTap: () => setState(() { _category = cat; _selectedIndex = 0; }),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds:200),
                           padding: const EdgeInsets.symmetric(horizontal:14, vertical:8),
@@ -126,42 +132,50 @@ class _PricesScreenState extends State<PricesScreen> {
                   const SizedBox(height:14),
 
                   if (filtered.isNotEmpty)
-                    GlowCard(
-                      glowColor: color,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(crossAxisAlignment:CrossAxisAlignment.start, children:[
-                        Row(mainAxisAlignment:MainAxisAlignment.spaceBetween, children:[
-                          Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[
-                            Text(' ',
-                              style:TextStyle(fontSize:12, color:isDark?AppColors.mutedDark:AppColors.mutedLight)),
-                            const SizedBox(height:4),
-                            Text(_fmt(filtered[0]),
-                              style:TextStyle(fontSize:28, fontWeight:FontWeight.w800, fontFamily:'monospace', color:color)),
-                            Row(children:[
-                              Icon(filtered[0].isUp?Icons.arrow_drop_up:Icons.arrow_drop_down,
-                                color:filtered[0].isUp?AppColors.green:AppColors.red, size:18),
-                              Text('%',
-                                style:TextStyle(fontSize:13, fontWeight:FontWeight.w600,
-                                  color:filtered[0].isUp?AppColors.green:AppColors.red)),
+                    GestureDetector(
+                      onTap: () => _openDetail(filtered[_selectedIndex]),
+                      child: GlowCard(
+                        glowColor: color,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(crossAxisAlignment:CrossAxisAlignment.start, children:[
+                          Row(mainAxisAlignment:MainAxisAlignment.spaceBetween, children:[
+                            Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start, children:[
+                              Text(' ',
+                                style:TextStyle(fontSize:12, color:isDark?AppColors.mutedDark:AppColors.mutedLight)),
+                              const SizedBox(height:4),
+                              Text(_fmt(filtered[_selectedIndex]),
+                                style:TextStyle(fontSize:28, fontWeight:FontWeight.w800, fontFamily:'monospace', color:color)),
+                              Row(children:[
+                                Icon(filtered[_selectedIndex].isUp?Icons.arrow_drop_up:Icons.arrow_drop_down,
+                                  color:filtered[_selectedIndex].isUp?AppColors.green:AppColors.red, size:18),
+                                Text('%',
+                                  style:TextStyle(fontSize:13, fontWeight:FontWeight.w600,
+                                    color:filtered[_selectedIndex].isUp?AppColors.green:AppColors.red)),
+                              ]),
+                            ])),
+                            Column(crossAxisAlignment:CrossAxisAlignment.end, children:[
+                              const LiveDot(),
+                              const SizedBox(height:10),
+                              SparkLine(data:filtered[_selectedIndex].spark, isUp:filtered[_selectedIndex].isUp, width:90, height:36),
+                              const SizedBox(height: 8),
+                              Icon(Icons.touch_app, size: 14, color: isDark ? AppColors.mutedDark : AppColors.mutedLight),
                             ]),
-                          ])),
-                          Column(crossAxisAlignment:CrossAxisAlignment.end, children:[
-                            const LiveDot(),
-                            const SizedBox(height:10),
-                            SparkLine(data:filtered[0].spark, isUp:filtered[0].isUp, width:90, height:36),
                           ]),
+                          const SizedBox(height:10),
+                          const Divider(),
+                          const SizedBox(height:8),
+                          Row(children:[
+                            _StatBox(label:'Change',
+                              value:(filtered[_selectedIndex].change>=0?'+':'')+filtered[_selectedIndex].change.toStringAsFixed(4)),
+                            _StatBox(label:'% Change',
+                              value:(filtered[_selectedIndex].changePct>=0?'+':'')+filtered[_selectedIndex].changePct.toStringAsFixed(2)+'%'),
+                            _StatBox(label:'Category', value:_category),
+                          ]),
+                          const SizedBox(height: 8),
+                          Center(child: Text('Tap for full details →',
+                            style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600))),
                         ]),
-                        const SizedBox(height:10),
-                        const Divider(),
-                        const SizedBox(height:8),
-                        Row(children:[
-                          _StatBox(label:'Change',
-                            value:''),
-                          _StatBox(label:'% Change',
-                            value:'%'),
-                          _StatBox(label:'Category', value:_category),
-                        ]),
-                      ]),
+                      ),
                     )
                   else
                     GlowCard(padding:const EdgeInsets.all(24),
@@ -199,7 +213,10 @@ class _PricesScreenState extends State<PricesScreen> {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount:2, mainAxisSpacing:10, crossAxisSpacing:10, childAspectRatio:1.55),
                   delegate: SliverChildBuilderDelegate(
-                    (ctx,i) => _PairCard(pair:filtered[i], catColor:color),
+                    (ctx,i) => GestureDetector(
+                      onTap: () => _openDetail(filtered[i]),
+                      child: _PairCard(pair:filtered[i], catColor:color),
+                    ),
                     childCount: filtered.length),
                 ),
               ),
@@ -272,7 +289,7 @@ class _PairCard extends StatelessWidget {
             Text(_fmt(pair), style:TextStyle(fontSize:14, fontWeight:FontWeight.w800, fontFamily:'monospace', color:catColor)),
             const SizedBox(height:2),
             Row(mainAxisAlignment:MainAxisAlignment.spaceBetween, children:[
-              Flexible(child:Text('%',
+              Flexible(child:Text((pair.changePct>=0?'+':'')+pair.changePct.toStringAsFixed(2)+'%',
                 style:TextStyle(fontSize:11, fontWeight:FontWeight.w600, color:up?AppColors.green:AppColors.red))),
               SparkLine(data:pair.spark, isUp:up, width:55, height:22),
             ]),
@@ -338,3 +355,9 @@ class _TickerBannerState extends State<_TickerBanner> with SingleTickerProviderS
       ));
   }
 }
+
+
+
+
+
+

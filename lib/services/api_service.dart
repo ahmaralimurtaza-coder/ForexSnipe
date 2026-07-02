@@ -2,6 +2,24 @@
 import 'package:http/http.dart' as http;
 
 class ApiService {
+  String _decodeHtml(String s) {
+    return s
+        .replaceAll('&#039;', "'")
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'")
+        .replaceAll('&#x2019;', '\u2019')
+        .replaceAll('&#x2018;', '\u2018')
+        .replaceAll('&#8217;', '\u2019')
+        .replaceAll('&#8216;', '\u2018')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#034;', '"')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&mdash;', '\u2014')
+        .replaceAll('&ndash;', '\u2013')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>');
+  }
   static const _finnhubKey        = 'd90cstpr01qk8bfkjeq0d90cstpr01qk8bfkjeqg';
   static const _newsApiKey        = '1b64f827220b48f7b3645d6d3aa9edf9';
   static const _mediastackKey     = '0f4517ce9ef6a7891cba0892517e9b6a';
@@ -43,12 +61,12 @@ class ApiService {
     try {
       final res = await _client
           .get(Uri.parse('='), headers: _h)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final rates = json.decode(res.body)['rates'] as Map<String, dynamic>?;
         if (rates != null) return rates.map((k, v) => MapEntry(k, double.tryParse(v.toString()) ?? 0.0));
       }
-    } catch (e) { print('CurrencyFreaks: '); }
+    } catch (e) { print('CurrencyFreaks: $e'); }
     return {};
   }
 
@@ -56,7 +74,7 @@ class ApiService {
     try {
       final res = await _client
           .get(Uri.parse('/latest?from=USD'), headers: _h)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final data  = json.decode(res.body);
         final rates = Map<String, double>.from(
@@ -64,18 +82,18 @@ class ApiService {
         rates['USD'] = 1.0;
         return rates;
       }
-    } catch (e) { print('Frankfurter: '); }
+    } catch (e) { print('Frankfurter: $e'); }
     return {};
   }
 
   Future<Map<String, double>> getForexRates() async {
     try {
-      final res = await _client.get(Uri.parse(_exchangeRate), headers: _h).timeout(const Duration(seconds: 10));
+      final res = await _client.get(Uri.parse(_exchangeRate), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         return Map<String, dynamic>.from(json.decode(res.body)['rates'])
             .map((k, v) => MapEntry(k, (v as num).toDouble()));
       }
-    } catch (e) { print('ExchangeRate: '); }
+    } catch (e) { print('ExchangeRate: $e'); }
     return {};
   }
 
@@ -83,13 +101,13 @@ class ApiService {
     try {
       final res = await _client
           .get(Uri.parse('/latest?access_key=&base=EUR'), headers: _h)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         if (data['success'] == true && data['rates'] != null)
           return Map<String, dynamic>.from(data['rates']).map((k, v) => MapEntry(k, (v as num).toDouble()));
       }
-    } catch (e) { print('Fixer: '); }
+    } catch (e) { print('Fixer: $e'); }
     return {};
   }
 
@@ -120,7 +138,7 @@ class ApiService {
           'x-access-token': _goldApiKey,
           'Content-Type': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final d = json.decode(res.body);
         final price  = (d['price']          as num?)?.toDouble() ?? 0.0;
@@ -136,7 +154,7 @@ class ApiService {
           'open':      (d['open_price'] as num?)?.toDouble() ?? price,
         };
       }
-    } catch (e) { print('GoldAPI (): '); }
+    } catch (e) { print('GoldAPI (): $e'); }
     return {};
   }
 
@@ -171,7 +189,7 @@ class ApiService {
           'change':    double.tryParse(d['priceChange'].toString())        ?? 0.0,
         };
       }
-    } catch (e) { print('Binance (): '); }
+    } catch (e) { print('Binance (): $e'); }
     return {};
   }
 
@@ -183,7 +201,7 @@ class ApiService {
       if (res.statusCode == 200) {
         return (json.decode(res.body) as List).map((k) => double.tryParse(k[4].toString()) ?? 0.0).toList();
       }
-    } catch (e) { print('Binance spark (): '); }
+    } catch (e) { print('Binance spark (): $e'); }
     return [];
   }
 
@@ -209,7 +227,7 @@ class ApiService {
         }
         await Future.delayed(const Duration(milliseconds: 100));
       }
-    } catch (e) { print('Binance crypto: '); }
+    } catch (e) { print('Binance crypto: $e'); }
     return result;
   }
 
@@ -218,7 +236,7 @@ class ApiService {
       const ids = 'bitcoin,ethereum,binance-coin,solana,xrp,cardano,dogecoin,avalanche,chainlink,polkadot';
       final res = await _client
           .get(Uri.parse('/assets?ids=&limit=10'), headers: _h)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         const nm = {
           'bitcoin':'BTC/USD','ethereum':'ETH/USD','binance-coin':'BNB/USD',
@@ -234,7 +252,7 @@ class ApiService {
         }
         return result;
       }
-    } catch (e) { print('CoinCap: '); }
+    } catch (e) { print('CoinCap: $e'); }
     return {};
   }
 
@@ -243,7 +261,7 @@ class ApiService {
       final url = '/coins/markets?vs_currency=usd'
           '&ids=bitcoin,ethereum,binancecoin,solana,ripple,cardano,dogecoin,avalanche-2,chainlink,polkadot'
           '&order=market_cap_desc&per_page=10&page=1&sparkline=true&price_change_percentage=24h';
-      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 12));
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         const idMap = {
           'bitcoin':'BTC/USD','ethereum':'ETH/USD','binancecoin':'BNB/USD',
@@ -264,7 +282,7 @@ class ApiService {
         }
         return result;
       }
-    } catch (e) { print('CoinGecko: '); }
+    } catch (e) { print('CoinGecko: $e'); }
     return {};
   }
 
@@ -275,7 +293,7 @@ class ApiService {
       try {
         final res = await _client
             .get(Uri.parse('/=1d&range=5d'), headers: _h)
-            .timeout(const Duration(seconds: 12));
+            .timeout(const Duration(seconds: 25));
         if (res.statusCode == 200) {
           final result = json.decode(res.body)['chart']?['result'];
           if (result != null && (result as List).isNotEmpty) {
@@ -293,7 +311,7 @@ class ApiService {
             return {'price': price, 'change': change, 'changePct': chgPct, 'spark': spark};
           }
         }
-      } catch (e) { print('Yahoo (): '); }
+      } catch (e) { print('Yahoo (): $e'); }
     }
     return {};
   }
@@ -363,7 +381,7 @@ class ApiService {
     try {
       final res = await _client
           .get(Uri.parse('/iex/='), headers: _h)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final list = json.decode(res.body) as List?;
         if (list != null && list.isNotEmpty) {
@@ -374,218 +392,230 @@ class ApiService {
           return {'price': p, 'change': c, 'changePct': v > 0 ? (c / v) * 100 : 0.0};
         }
       }
-    } catch (e) { print('Tiingo (): '); }
+    } catch (e) { print('Tiingo (): $e'); }
     return {};
   }
-
-  // ═══ NEWS ═══
-
-  Future<List<Map<String, dynamic>>> getReutersNews() async {
-    try {
-      const feeds = [
-        'https://feeds.reuters.com/reuters/businessNews',
-        'https://feeds.reuters.com/reuters/UKBusinessNews',
-      ];
-      final all = <Map<String, dynamic>>[];
-      for (final feed in feeds) {
-        final res = await _client
-            .get(Uri.parse('=&count=10'), headers: _h)
-            .timeout(const Duration(seconds: 10));
-        if (res.statusCode == 200) {
-          final items = json.decode(res.body)['items'] as List? ?? [];
-          for (final i in items) {
-            all.add({'title':i['title']??'','source':'REUTERS','url':i['link']??'','publishedAt':i['pubDate']??''});
-          }
-        }
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
-      return all;
-    } catch (e) { print('Reuters: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getMarketWatchNews() async {
-    try {
-      const feeds = [
-        'https://feeds.marketwatch.com/marketwatch/topstories/',
-        'https://feeds.marketwatch.com/marketwatch/marketpulse/',
-      ];
-      final all = <Map<String, dynamic>>[];
-      for (final feed in feeds) {
-        final res = await _client
-            .get(Uri.parse('=&count=10'), headers: _h)
-            .timeout(const Duration(seconds: 10));
-        if (res.statusCode == 200) {
-          final items = json.decode(res.body)['items'] as List? ?? [];
-          for (final i in items) {
-            all.add({'title':i['title']??'','source':'MARKETWATCH','url':i['link']??'','publishedAt':i['pubDate']??''});
-          }
-        }
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
-      return all;
-    } catch (e) { print('MarketWatch: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getCnbcNews() async {
-    try {
-      const feeds = [
-        'https://www.cnbc.com/id/10000664/device/rss/rss.html',
-        'https://www.cnbc.com/id/20910258/device/rss/rss.html',
-      ];
-      final all = <Map<String, dynamic>>[];
-      for (final feed in feeds) {
-        final res = await _client
-            .get(Uri.parse('=&count=10'), headers: _h)
-            .timeout(const Duration(seconds: 10));
-        if (res.statusCode == 200) {
-          final items = json.decode(res.body)['items'] as List? ?? [];
-          for (final i in items) {
-            all.add({'title':i['title']??'','source':'CNBC','url':i['link']??'','publishedAt':i['pubDate']??''});
-          }
-        }
-      }
-      return all;
-    } catch (e) { print('CNBC: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getInvestingNews(String category) async {
-    try {
-      const catMap = {
-        'forex':       'https://www.investing.com/rss/news_25.rss',
-        'crypto':      'https://www.investing.com/rss/news_301.rss',
-        'stocks':      'https://www.investing.com/rss/news_14.rss',
-        'commodities': 'https://www.investing.com/rss/news_8.rss',
-        'economy':     'https://www.investing.com/rss/news_95.rss',
-      };
-      final feed = catMap[category] ?? catMap['forex']!;
-      final res  = await _client
-          .get(Uri.parse('=&count=15'), headers: _h)
-          .timeout(const Duration(seconds: 10));
-      if (res.statusCode == 200) {
-        final items = json.decode(res.body)['items'] as List? ?? [];
-        return items.map((i) => {
-          'title':i['title']??'','source':'INVESTING.COM',
-          'url':i['link']??'','publishedAt':i['pubDate']??''
-        }).toList();
-      }
-    } catch (e) { print('Investing (): '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getFinnhubNews(String category) async {
-    try {
-      final res = await _client
-          .get(Uri.parse('/news?category=&token='), headers: _h)
-          .timeout(const Duration(seconds: 10));
-      if (res.statusCode == 200) {
-        return (json.decode(res.body) as List).take(20).map((e) => Map<String, dynamic>.from(e)).toList();
-      }
-    } catch (e) { print('Finnhub news: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getFinnhubCompanyNews(String symbol) async {
-    try {
-      final now  = DateTime.now();
-      final from = now.subtract(const Duration(days: 3));
-      String fmt(DateTime d) => '--';
-      final res = await _client
-          .get(Uri.parse('/company-news?symbol=&from=&to=&token='), headers: _h)
-          .timeout(const Duration(seconds: 10));
-      if (res.statusCode == 200) {
-        return (json.decode(res.body) as List).take(10).map((e) => Map<String, dynamic>.from(e)).toList();
-      }
-    } catch (e) { print('Finnhub company: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getNewsApiArticles(String query) async {
-    try {
-      final url = '=&language=en&sortBy=publishedAt&pageSize=15&apiKey=';
-      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 12));
-      if (res.statusCode == 200) {
-        return (json.decode(res.body)['articles'] as List? ?? [])
-            .map((e) => Map<String, dynamic>.from(e))
-            .where((a) => a['title'] != null && a['title'] != '[Removed]')
-            .toList();
-      }
-    } catch (e) { print('NewsAPI: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getStockNews()     => getNewsApiArticles('stock market OR S&P 500 OR NASDAQ OR earnings');
-  Future<List<Map<String, dynamic>>> getIndicesNews()   => getNewsApiArticles('stock index OR Dow Jones OR FTSE OR DAX OR Nikkei');
-  Future<List<Map<String, dynamic>>> getCommodityNews() => getNewsApiArticles('gold price OR crude oil OR silver OR commodity');
-  Future<List<Map<String, dynamic>>> getFuturesNews()   => getNewsApiArticles('futures market OR crude futures');
-
-  Future<List<Map<String, dynamic>>> getMediastackNews(String kw) async {
-    try {
-      final res = await _client
-          .get(Uri.parse('=&keywords=&languages=en&sort=published_desc&limit=20'), headers: _h)
-          .timeout(const Duration(seconds: 12));
-      if (res.statusCode == 200) {
-        return (json.decode(res.body)['data'] as List? ?? [])
-            .map((e) => Map<String, dynamic>.from(e))
-            .where((a) => a['title'] != null)
-            .toList();
-      }
-    } catch (e) { print('Mediastack: '); }
-    return [];
-  }
-
-  Future<List<Map<String, dynamic>>> getMediastackForexNews()     => getMediastackNews('forex,currency,EUR USD,GBP JPY');
-  Future<List<Map<String, dynamic>>> getMediastackCryptoNews()    => getMediastackNews('bitcoin,ethereum,cryptocurrency');
-  Future<List<Map<String, dynamic>>> getMediastackCommodityNews() => getMediastackNews('gold price,crude oil,silver commodity');
-
-  // ═══ CALENDAR ═══
 
   Future<List<Map<String, dynamic>>> getEconomicCalendar() async {
     try {
       final now  = DateTime.now();
-      final from = now.subtract(const Duration(days: 1));
-      final to   = now.add(const Duration(days: 7));
-      String fmt(DateTime d) => '--';
-      final res = await _client
-          .get(Uri.parse('/calendar/economic?from=&to=&token='), headers: _h)
-          .timeout(const Duration(seconds: 12));
+      final from = now.subtract(const Duration(days: 7)).toIso8601String().substring(0,10);
+      final to   = now.add(const Duration(days: 7)).toIso8601String().substring(0,10);
+      final url  = 'https://finnhub.io/api/v1/calendar/economic?from=' + from + '&to=' + to + '&token=d90cstpr01qk8bfkjeq0d90cstpr01qk8bfkjeqg';
+      final res  = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['economicCalendar'] != null) return List<Map<String, dynamic>>.from(data['economicCalendar']);
+        return ((json.decode(res.body)['economicCalendar'] as List?) ?? [])
+            .map((e) => Map<String, dynamic>.from(e)).toList();
       }
-    } catch (e) { print('Calendar: '); }
+    } catch (e) { print('Calendar: $e'); }
     return [];
   }
 
-  // ═══ COT ═══
-
-  Future<List<Map<String, dynamic>>> _fetchCftc(String where) async {
+  Future<List<Map<String, dynamic>>> getForexCot() async {
     try {
-      final url = Uri.encodeFull('\=&\=30&\=report_date_as_yyyy_mm_dd DESC');
-      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 15));
-      if (res.statusCode == 200) return List<Map<String, dynamic>>.from(json.decode(res.body));
-    } catch (e) { print('CFTC: '); }
+      final where = Uri.encodeComponent("market_and_exchange_names like '%EURO FX%' OR market_and_exchange_names like '%BRITISH POUND%' OR market_and_exchange_names like '%JAPANESE YEN%' OR market_and_exchange_names like '%AUSTRALIAN DOLLAR%' OR market_and_exchange_names like '%CANADIAN DOLLAR%' OR market_and_exchange_names like '%SWISS FRANC%'"); final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=30&\$order=report_date_as_yyyy_mm_dd DESC';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('ForexCOT: $e'); }
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> getForexCot() => _fetchCftc(
-    "market_and_exchange_names like '%EURO FX%' OR market_and_exchange_names like '%BRITISH POUND%' OR "
-    "market_and_exchange_names like '%JAPANESE YEN%' OR market_and_exchange_names like '%AUSTRALIAN DOLLAR%' OR "
-    "market_and_exchange_names like '%CANADIAN DOLLAR%' OR market_and_exchange_names like '%SWISS FRANC%'"
-  );
+  Future<List<Map<String, dynamic>>> getCommodityCot() async {
+    try {
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$limit=20&\$order=report_date_as_yyyy_mm_dd DESC&cftc_market_code=CMX';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('CommodityCOT: $e'); }
+    return [];
+  }
 
-  Future<List<Map<String, dynamic>>> getCommodityCot() => _fetchCftc(
-    "market_and_exchange_names like '%GOLD%' OR market_and_exchange_names like '%SILVER%' OR "
-    "market_and_exchange_names like '%CRUDE OIL%' OR market_and_exchange_names like '%WHEAT%' OR "
-    "market_and_exchange_names like '%CORN%'"
-  );
+  Future<List<Map<String, dynamic>>> getIndicesCot() async {
+    try {
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$limit=20&\$order=report_date_as_yyyy_mm_dd DESC&cftc_market_code=CME';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('IndicesCOT: $e'); }
+    return [];
+  }
 
-  Future<List<Map<String, dynamic>>> getIndicesCot() => _fetchCftc(
-    "market_and_exchange_names like '%S&P 500%' OR market_and_exchange_names like '%NASDAQ%' OR "
-    "market_and_exchange_names like '%DOW JONES%'"
-  );
+  void dispose() { _client.close(); }
 
-  void dispose() => _client.close();
+  // NEWS
+  Future<List<Map<String, dynamic>>> _fetchRss(String url, String source) async {
+    try {
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
+      if (res.statusCode == 200) {
+        final body = utf8.decode(res.bodyBytes, allowMalformed: true);
+        final items = <Map<String, dynamic>>[];
+        final itemRegex = RegExp(r'<item[\s\S]*?<\/item>', multiLine: true);
+        final titleRegex = RegExp(r'<title>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/title>', dotAll: true);
+        final linkRegex = RegExp(r'<link>(.*?)<\/link>', dotAll: true);
+        final pubRegex = RegExp(r'<pubDate>(.*?)<\/pubDate>', dotAll: true);
+        for (final m in itemRegex.allMatches(body)) {
+          final chunk = m.group(0) ?? '';
+          final title = _decodeHtml(titleRegex.firstMatch(chunk)?.group(1)?.trim() ?? '');
+          final link = linkRegex.firstMatch(chunk)?.group(1)?.trim() ?? '';
+          final pub = pubRegex.firstMatch(chunk)?.group(1)?.trim() ?? '';
+          if (title.isNotEmpty) {
+            items.add({'title': title, 'source': source, 'url': link, 'publishedAt': pub});
+          }
+          if (items.length >= 15) break;
+        }
+        return items;
+      }
+    } catch (e) { print('RSS $source: $e'); }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getReutersNews() async {
+    final all = <Map<String, dynamic>>[];
+    all.addAll(await _fetchRss('https://feeds.bbci.co.uk/news/business/rss.xml', 'BBC BUSINESS'));
+    all.addAll(await _fetchRss('https://www.ft.com/rss/home', 'FT'));
+    return all;
+  }
+
+  Future<List<Map<String, dynamic>>> getMarketWatchNews() async {
+    final all = <Map<String, dynamic>>[];
+    all.addAll(await _fetchRss('https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', 'MARKETWATCH'));
+    all.addAll(await _fetchRss('https://www.nasdaq.com/feed/rssoutbound?category=Stocks', 'NASDAQ'));
+    return all;
+  }
+
+  Future<List<Map<String, dynamic>>> getCnbcNews() async {
+    final all = <Map<String, dynamic>>[];
+    all.addAll(await _fetchRss('https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114', 'CNBC'));
+    all.addAll(await _fetchRss('https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839135', 'CNBC MARKETS'));
+    return all;
+  }
+
+  Future<List<Map<String, dynamic>>> getInvestingNews(String category) async {
+    final urls = <String,String>{
+      'forex':       'https://www.fxstreet.com/rss/news',
+      'crypto':      'https://cointelegraph.com/rss',
+      'stocks':      'https://finance.yahoo.com/news/rssindex',
+      'commodities': 'https://www.mining.com/feed/',
+      'economy':     'https://feeds.bbci.co.uk/news/business/economy/rss.xml',
+    };
+    return await _fetchRss(urls[category] ?? urls['forex']!, category.toUpperCase());
+  }
+
+  Future<List<Map<String, dynamic>>> getFinnhubNews(String category) async {
+    final urls = <String,String>{
+      'forex':   'https://www.forexlive.com/feed/news',
+      'crypto':  'https://coindesk.com/arc/outboundfeeds/rss/',
+      'general': 'https://finance.yahoo.com/rss/headline',
+    };
+    return await _fetchRss(urls[category] ?? urls['general']!, category.toUpperCase());
+  }
+
+  Future<List<Map<String, dynamic>>> getFinnhubCompanyNews(String symbol) async {
+    return await _fetchRss('https://finance.yahoo.com/rss/headline?s=' + symbol, symbol);
+  }
+
+  Future<List<Map<String, dynamic>>> getStockNews() async {
+    return await _fetchRss('https://finance.yahoo.com/news/rssindex', 'YAHOO FINANCE');
+  }
+
+  Future<List<Map<String, dynamic>>> getIndicesNews() async {
+    return await _fetchRss('https://feeds.bbci.co.uk/news/business/market-data/rss.xml', 'BBC MARKETS');
+  }
+
+  Future<List<Map<String, dynamic>>> getCommodityNews() async {
+    return await _fetchRss('https://www.kitco.com/rss/kitconews.rss', 'KITCO');
+  }
+
+  Future<List<Map<String, dynamic>>> getMediastackForexNews() async {
+    return await _fetchRss('https://www.forexlive.com/feed/news', 'FOREXLIVE');
+  }
+
+  Future<List<Map<String, dynamic>>> getMediastackCryptoNews() async {
+    return await _fetchRss('https://coindesk.com/arc/outboundfeeds/rss/', 'COINDESK');
+  }
+
+  Future<List<Map<String, dynamic>>> getMediastackCommodityNews() async {
+    return await _fetchRss('https://oilprice.com/rss/main', 'OILPRICE');
+  }
+
+  Future<List<Map<String, dynamic>>> getNewsApiArticles(String query) async {
+    return await _fetchRss('https://finance.yahoo.com/news/rssindex', 'YAHOO');
+  }
+  Future<List<Map<String, dynamic>>> getEarthquakes() async {
+    try {
+      final url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
+      if (res.statusCode == 200) {
+        final body = utf8.decode(res.bodyBytes, allowMalformed: true);
+        final data = json.decode(body);
+        final features = data['features'] as List? ?? [];
+        return features.map((f) {
+          final props = f['properties'] as Map<String, dynamic>? ?? {};
+          final geom = f['geometry'] as Map<String, dynamic>? ?? {};
+          final coords = geom['coordinates'] as List? ?? [];
+          return {
+            'title': props['title'] ?? '',
+            'mag': props['mag'],
+            'place': props['place'] ?? '',
+            'time': props['time'],
+            'url': props['url'] ?? '',
+            'lon': coords.isNotEmpty ? coords[0] : null,
+            'lat': coords.length > 1 ? coords[1] : null,
+          };
+        }).toList();
+      }
+    } catch (e) { print('Earthquakes: $e'); }
+    return [];
+  }
+  Future<List<Map<String, dynamic>>> getDisasters() async {
+    try {
+      final url = 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=20';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
+      if (res.statusCode == 200) {
+        final body = utf8.decode(res.bodyBytes, allowMalformed: true);
+        final data = json.decode(body);
+        final events = data['events'] as List? ?? [];
+        return events.map((e) {
+          final categories = e['categories'] as List? ?? [];
+          final catTitle = categories.isNotEmpty ? (categories[0]['title'] ?? 'Event') : 'Event';
+          final geoms = e['geometry'] as List? ?? [];
+          final coords = geoms.isNotEmpty ? (geoms.last['coordinates'] as List? ?? []) : [];
+          final dateStr = geoms.isNotEmpty ? geoms.last['date'] : null;
+          return {
+            'title': e['title'] ?? '',
+            'category': catTitle,
+            'url': (e['sources'] as List?)?.isNotEmpty == true ? e['sources'][0]['url'] ?? '' : '',
+            'date': dateStr,
+            'lon': coords.isNotEmpty ? coords[0] : null,
+            'lat': coords.length > 1 ? coords[1] : null,
+          };
+        }).toList();
+      }
+    } catch (e) { print('Disasters: $e'); }
+    return [];
+  }
+  Future<List<Map<String, dynamic>>> getGdeltEvents() async {
+    try {
+      final url = 'https://api.gdeltproject.org/api/v2/doc/doc?query=sourcelang:eng%20(conflict%20OR%20protest%20OR%20crisis)&mode=artlist&maxrecords=20&format=json&sort=datedesc';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
+      if (res.statusCode == 200) {
+        final body = utf8.decode(res.bodyBytes, allowMalformed: true);
+        if (!body.trim().startsWith('{')) { print('GDELT: non-json response (likely rate limited)'); return []; }
+        final data = json.decode(body);
+        final arts = data['articles'] as List? ?? [];
+        return arts.map((a) => {
+          'title': a['title'] ?? '',
+          'url': a['url'] ?? '',
+          'domain': a['domain'] ?? '',
+          'seendate': a['seendate'] ?? '',
+        }).toList();
+      }
+    } catch (e) { print('GDELT: $e'); }
+    return [];
+  }
 }
+
+
+
+
+
+
+

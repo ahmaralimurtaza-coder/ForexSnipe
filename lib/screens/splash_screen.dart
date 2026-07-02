@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen>
   final _rng = Random();
   Timer? _candleTimer;
 
-  // ── Sniper scope drawing progress
+  // â”€â”€ Sniper scope drawing progress
   late AnimationController _scopeCtrl;
   late Animation<double> _scopeProgress;
 
@@ -77,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) setState(() => _updateCandles());
     });
 
-    // ── 5 SECOND SEQUENCE ──
+    // â”€â”€ 5 SECOND SEQUENCE â”€â”€
     // 0.0s - candles appear immediately (background)
     // 0.3s - logo pops in
     Future.delayed(const Duration(milliseconds: 300), () { if (mounted) _logoCtrl.forward(); });
@@ -152,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
         backgroundColor: const Color(0xFF06080E),
         body: Stack(children: [
 
-          // ── Background candlestick chart ──
+          // â”€â”€ Background candlestick chart â”€â”€
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _pulseCtrl,
@@ -162,7 +162,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Dark gradient overlay ──
+          // â”€â”€ Dark gradient overlay â”€â”€
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -180,7 +180,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── Main content ──
+          // â”€â”€ Main content â”€â”€
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -369,14 +369,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Candle model ──
+// â”€â”€ Candle model â”€â”€
 class _Candle {
   final double open, close, high, low;
   const _Candle({required this.open, required this.close, required this.high, required this.low});
   bool get isBull => close >= open;
 }
 
-// ── Background chart painter ──
+// â”€â”€ Background chart painter â”€â”€
 class _CandlePainter extends CustomPainter {
   final List<_Candle> candles;
   final double pulse;
@@ -409,7 +409,7 @@ class _CandlePainter extends CustomPainter {
       final top = toY(max(c.open, c.close));
       final bot = toY(min(c.open, c.close));
       canvas.drawRect(
-        Rect.fromLTRB(cx - bw/2, top, cx + bw/2, bot.clamp(top+2, size.height)),
+        Rect.fromLTRB(cx - bw/2, top, cx + bw/2, bot.clamp(top+2, size.height < top+2 ? top+2 : size.height)),
         Paint()..color = col,
       );
     }
@@ -433,7 +433,7 @@ class _CandlePainter extends CustomPainter {
   @override bool shouldRepaint(_CandlePainter old) => true;
 }
 
-// ── Animated sniper scope painter ──
+// â”€â”€ Animated sniper scope painter â”€â”€
 class _ScopePainter extends CustomPainter {
   final double progress;
   final double pulse;

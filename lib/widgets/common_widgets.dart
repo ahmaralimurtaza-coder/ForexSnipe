@@ -155,7 +155,7 @@ class CotBar extends StatelessWidget {
     return Padding(padding: const EdgeInsets.only(bottom: 10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Text(label, style: TextStyle(fontSize: 11, color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
-        Text(value >= 0 ? '+' : _fmt(value), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: value >= 0 ? AppColors.green : AppColors.red)),
+        Text(value >= 0 ? '+' + _fmt(value) : _fmt(value), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: value >= 0 ? AppColors.green : AppColors.red)),
       ]),
       const SizedBox(height: 4),
       Stack(children: [
@@ -164,5 +164,6 @@ class CotBar extends StatelessWidget {
       ]),
     ]));
   }
-  String _fmt(int v) { if (v.abs() >= 1000000) return 'M'; if (v.abs() >= 1000) return 'K'; return v.toString(); }
+  String _fmt(int v) { if (v.abs() >= 1000000) return '${(v/1000000).toStringAsFixed(1)}M'; if (v.abs() >= 1000) return '${(v/1000).toStringAsFixed(1)}K'; return v.toString(); }
 }
+

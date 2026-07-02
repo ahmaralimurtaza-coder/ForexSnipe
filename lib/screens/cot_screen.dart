@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../models/sample_data.dart';
 import '../widgets/common_widgets.dart';
 import 'dart:math' as math;
+import 'package:provider/provider.dart';
+import '../services/data_provider.dart';
 
 class CotScreen extends StatefulWidget {
   const CotScreen({super.key});
@@ -16,8 +18,8 @@ class _CotScreenState extends State<CotScreen> {
 
   final _categories = ['Forex','Indices','Stocks','Crypto','Commodities','Futures'];
 
-  List<CotData> get _filtered =>
-      SampleData.cotData.where((c) => c.category == _category).toList();
+  List<CotData> _filteredFrom(List<CotData> source) =>
+      source.where((c) => c.category == _category).toList();
 
   Color _catColor(String cat) {
     switch (cat) {
@@ -33,20 +35,21 @@ class _CotScreenState extends State<CotScreen> {
 
   String _catEmoji(String cat) {
     switch (cat) {
-      case 'Forex':       return '💱';
-      case 'Indices':     return '📈';
-      case 'Stocks':      return '🏢';
-      case 'Crypto':      return '₿';
-      case 'Commodities': return '🛢️';
-      case 'Futures':     return '🔮';
-      default:            return '📊';
+      case 'Forex':       return '\u{1F4B1}';
+      case 'Indices':     return '\u{1F4C8}';
+      case 'Stocks':      return '\u{1F3E2}';
+      case 'Crypto':      return '\u{20BF}';
+      case 'Commodities': return '\u{1F6E2}';
+      case 'Futures':     return '\u{1F52E}';
+      default:            return '\u{1F4CA}';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final filtered = _filtered;
+    final dp       = context.watch<DataProvider>();
+    final filtered = _filteredFrom(dp.cotData);
     final safeSelected = _selected.clamp(0, filtered.isEmpty ? 0 : filtered.length - 1);
     final cot = filtered.isEmpty ? null : filtered[safeSelected];
     final color = _catColor(_category);
@@ -104,7 +107,7 @@ class _CotScreenState extends State<CotScreen> {
               const SizedBox(width: 8),
               Expanded(child: Text(
                 cot != null
-                    ? 'Data from CFTC.gov — Week ending ${cot.weekEnding} — Released every Friday'
+                    ? 'Data from CFTC.gov - Week ending ${cot.weekEnding} - Released every Friday'
                     : 'No COT data available for this category',
                 style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
               )),
@@ -193,11 +196,11 @@ class _CotScreenState extends State<CotScreen> {
                 Text('COMMITMENTS BREAKDOWN', style: TextStyle(
                     fontSize: 10, letterSpacing: 2, fontWeight: FontWeight.w700, color: color)),
                 const SizedBox(height: 16),
-                CotBar(label: 'Non-Commercial — Long',  value: cot.nonCommercialLong,   fraction: cot.nonCommercialLong  / (cot.openInterest * 0.6), color: AppColors.green),
-                CotBar(label: 'Non-Commercial — Short', value: -cot.nonCommercialShort, fraction: cot.nonCommercialShort / (cot.openInterest * 0.6), color: AppColors.red),
-                CotBar(label: 'Commercial — Long',      value: cot.commercialLong,       fraction: cot.commercialLong     / (cot.openInterest * 0.6), color: color),
-                CotBar(label: 'Commercial — Short',     value: -cot.commercialShort,     fraction: cot.commercialShort    / (cot.openInterest * 0.6), color: AppColors.red.withOpacity(0.7)),
-                CotBar(label: 'Small Traders — Long',   value: cot.smallTraderLong,      fraction: cot.smallTraderLong    / (cot.openInterest * 0.6), color: AppColors.gold),
+                CotBar(label: 'Non-Commercial - Long',  value: cot.nonCommercialLong,   fraction: cot.nonCommercialLong  / (cot.openInterest * 0.6), color: AppColors.green),
+                CotBar(label: 'Non-Commercial - Short', value: -cot.nonCommercialShort, fraction: cot.nonCommercialShort / (cot.openInterest * 0.6), color: AppColors.red),
+                CotBar(label: 'Commercial - Long',      value: cot.commercialLong,       fraction: cot.commercialLong     / (cot.openInterest * 0.6), color: color),
+                CotBar(label: 'Commercial - Short',     value: -cot.commercialShort,     fraction: cot.commercialShort    / (cot.openInterest * 0.6), color: AppColors.red.withOpacity(0.7)),
+                CotBar(label: 'Small Traders - Long',   value: cot.smallTraderLong,      fraction: cot.smallTraderLong    / (cot.openInterest * 0.6), color: AppColors.gold),
               ]),
             ),
             const SizedBox(height: 14),
@@ -209,10 +212,10 @@ class _CotScreenState extends State<CotScreen> {
                   fontSize: 10, letterSpacing: 2, fontWeight: FontWeight.w700,
                   color: isDark ? AppColors.cyan : const Color(0xFF0088AA))),
               const SizedBox(height: 10),
-              _ExplainRow('🟢 Non-Commercials', 'Hedge funds & speculators — strongest signal'),
-              _ExplainRow('🔴 Commercials',     'Hedgers — usually opposite to trend'),
-              _ExplainRow('🟡 Small Traders',   'Retail — contrarian signal at extremes'),
-              _ExplainRow('📊 Net Position',    'Increasing net longs = bullish bias'),
+              _ExplainRow('\u{1F7E2} Non-Commercials', 'Hedge funds & speculators - strongest signal'),
+              _ExplainRow('\u{1F534} Commercials',     'Hedgers - usually opposite to trend'),
+              _ExplainRow('\u{1F7E1} Small Traders',   'Retail - contrarian signal at extremes'),
+              _ExplainRow('\u{1F4CA} Net Position',    'Increasing net longs = bullish bias'),
             ])),
           ],
           const SizedBox(height: 20),
@@ -278,3 +281,7 @@ class _DonutPainter extends CustomPainter {
 
   @override bool shouldRepaint(_DonutPainter old) => old.pct != pct;
 }
+
+
+
+

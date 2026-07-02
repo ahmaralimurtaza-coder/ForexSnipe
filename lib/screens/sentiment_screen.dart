@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../models/sample_data.dart';
 import '../widgets/common_widgets.dart';
+import 'package:provider/provider.dart';
+import '../services/data_provider.dart';
 
 class SentimentScreen extends StatefulWidget {
   const SentimentScreen({super.key});
@@ -13,8 +15,8 @@ class _SentimentScreenState extends State<SentimentScreen> {
   String _category = 'Forex';
   final _categories = ['Forex','Indices','Stocks','Crypto','Commodities','Futures'];
 
-  List<SentimentData> get _filtered =>
-      SampleData.sentiment.where((s) => s.category == _category).toList();
+  List<SentimentData> _filteredFrom(List<SentimentData> source) =>
+      source.where((s) => s.category == _category).toList();
 
   Color _catColor(String cat) {
     switch (cat) {
@@ -30,32 +32,33 @@ class _SentimentScreenState extends State<SentimentScreen> {
 
   String _catEmoji(String cat) {
     switch (cat) {
-      case 'Forex':       return '💱';
-      case 'Indices':     return '📈';
-      case 'Stocks':      return '🏢';
-      case 'Crypto':      return '₿';
-      case 'Commodities': return '🛢️';
-      case 'Futures':     return '🔮';
-      default:            return '📊';
+      case 'Forex':       return '\u{1F4B1}';
+      case 'Indices':     return '\u{1F4C8}';
+      case 'Stocks':      return '\u{1F3E2}';
+      case 'Crypto':      return '\u{20BF}';
+      case 'Commodities': return '\u{1F6E2}';
+      case 'Futures':     return '\u{1F52E}';
+      default:            return '\u{1F4CA}';
     }
   }
 
   String _sourceInfo(String cat) {
     switch (cat) {
-      case 'Forex':       return 'Myfxbook community retail positioning';
-      case 'Indices':     return 'IG Group retail client positioning data';
-      case 'Stocks':      return 'Finviz analyst & retail sentiment data';
-      case 'Crypto':      return 'Myfxbook & exchange order book data';
-      case 'Commodities': return 'Myfxbook & broker positioning data';
-      case 'Futures':     return 'CME Group open interest & positioning';
-      default:            return 'Retail trader positioning';
+      case 'Forex':       return '\u{1F4B1}';
+      case 'Indices':     return '\u{1F4C8}';
+      case 'Stocks':      return '\u{1F3E2}';
+      case 'Crypto':      return '\u{20BF}';
+      case 'Commodities': return '\u{1F6E2}';
+      case 'Futures':     return '\u{1F52E}';
+      default:            return '\u{1F4CA}';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark   = Theme.of(context).brightness == Brightness.dark;
-    final filtered = _filtered;
+    final dp       = context.watch<DataProvider>();
+    final filtered = _filteredFrom(dp.sentiment);
     final color    = _catColor(_category);
 
     // Summary stats
@@ -67,7 +70,7 @@ class _SentimentScreenState extends State<SentimentScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionHeader(label: 'Myfxbook · IG Group · CME · Finviz', title: 'Market', titleAccent: 'Sentiment'),
+          const SectionHeader(label: 'Myfxbook Â· IG Group Â· CME Â· Finviz', title: 'Market', titleAccent: 'Sentiment'),
 
           // Category chips
           SizedBox(
@@ -207,7 +210,7 @@ class _SentimentCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: AppColors.gold.withOpacity(0.4)),
               ),
-              child: const Text('⚠️ EXTREME', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.gold)),
+              child: const Text('âš ï¸ EXTREME', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.gold)),
             ),
             Text(data.source, style: TextStyle(fontSize: 10,
                 color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
@@ -265,8 +268,8 @@ class _SentimentCard extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(child: Text(
                 isLongBias
-                    ? 'Extreme long retail bias — smart money may be positioned SHORT (contrarian signal)'
-                    : 'Extreme short retail bias — smart money may be positioned LONG (contrarian signal)',
+                    ? 'Extreme long retail bias â€” smart money may be positioned SHORT (contrarian signal)'
+                    : 'Extreme short retail bias â€” smart money may be positioned LONG (contrarian signal)',
                 style: const TextStyle(fontSize: 11, color: AppColors.gold),
               )),
             ]),
@@ -276,3 +279,6 @@ class _SentimentCard extends StatelessWidget {
     );
   }
 }
+
+
+

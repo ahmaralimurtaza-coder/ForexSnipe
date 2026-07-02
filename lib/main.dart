@@ -12,6 +12,7 @@ import 'screens/prices_screen.dart';
 import 'screens/cot_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/news_screen.dart';
+import 'screens/world_screen.dart';
 import 'screens/sentiment_screen.dart';
 import 'screens/barchart_screen.dart';
 import 'screens/ai_screen.dart';
@@ -101,20 +102,21 @@ class _HomeShellState extends State<HomeShell> {
     _Tab(icon: Icons.people_alt,              label: 'COT'),
     _Tab(icon: Icons.calendar_month,          label: 'Calendar'),
     _Tab(icon: Icons.newspaper,               label: 'News'),
+    _Tab(icon: Icons.public,                  label: 'World'),
     _Tab(icon: Icons.sentiment_satisfied_alt, label: 'Sentiment'),
-    _Tab(icon: Icons.bar_chart,               label: 'Barchart'),
+
     _Tab(icon: Icons.smart_toy_outlined,      label: 'AI Chat'),
     _Tab(icon: Icons.hub_outlined,            label: 'Sources'),
   ];
 
   final _screens = const [
-    PricesScreen(), CotScreen(), CalendarScreen(), NewsScreen(),
-    SentimentScreen(), BarchartScreen(), AiScreen(), SourcesScreen(),
+    PricesScreen(), CotScreen(), CalendarScreen(), NewsScreen(), WorldScreen(),
+    SentimentScreen(), AiScreen(), SourcesScreen(),
   ];
 
   final _titles = const [
-    'Live Prices', 'COT Report', 'Economic Calendar', 'Market News',
-    'Sentiment', 'Barchart COT', 'AI Analyst', 'Data Sources',
+    'Live Prices', 'COT Report', 'Economic Calendar', 'Market News', 'World Monitor',
+    'Sentiment', 'AI Analyst', 'Data Sources',
   ];
 
   @override
@@ -254,3 +256,7 @@ class _Tab {
   final String label;
   const _Tab({required this.icon, required this.label});
 }
+
+
+
+
