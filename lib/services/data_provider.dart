@@ -1,9 +1,14 @@
 ﻿import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import '../models/models.dart';
 import '../models/sample_data.dart';
 import 'api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class DataProvider extends ChangeNotifier {
   final _api = ApiService();
@@ -15,6 +20,7 @@ class DataProvider extends ChangeNotifier {
   List<CalendarEvent> _calendar  = List.from(SampleData.calendar);
   List<CotData>       _cotData   = List.from(SampleData.cotData);
   List<SentimentData> _sentiment = List.from(SampleData.sentiment);
+  List<SentimentData> _liveSentiment = [];
 
   Map<String, double> _prevPrices = {};
   bool      _isLoading = false;
@@ -31,21 +37,46 @@ class DataProvider extends ChangeNotifier {
   List<WorldEvent>    get worldEvents => _worldEvents;
   List<CalendarEvent> get calendar    => _calendar;
   List<CotData>       get cotData     => _cotData;
-  List<SentimentData> get sentiment   => _cotData.map((c) {
-    final totalLong  = c.nonCommercialLong + c.commercialLong + c.smallTraderLong;
-    final totalShort = c.nonCommercialShort + c.commercialShort + c.smallTraderShort;
-    final total      = totalLong + totalShort;
-    final longPct    = total > 0 ? (totalLong / total * 100) : 50.0;
-    return SentimentData(
-      pair: c.pair, longPct: longPct, shortPct: 100 - longPct,
-      source: 'CFTC COT', category: c.category,
-    );
-  }).toList();
+  List<SentimentData> get sentiment {
+    final cotMap = {for (final c in _cotData) c.pair: c};
+    final list = <SentimentData>[];
+    for (final p in _pairs) {
+      final c = cotMap[p.pair];
+      double longPct;
+      String source;
+      if (c != null) {
+        final totalLong  = c.nonCommercialLong + c.commercialLong + c.smallTraderLong;
+        final totalShort = c.nonCommercialShort + c.commercialShort + c.smallTraderShort;
+        final total      = totalLong + totalShort;
+        if (total > 0) {
+          longPct = totalLong / total * 100;
+          source  = 'CFTC COT';
+        } else {
+          longPct = _momentumSentiment(p);
+          source  = 'Momentum';
+        }
+      } else {
+        longPct = _momentumSentiment(p);
+        source  = 'Momentum';
+      }
+      list.add(SentimentData(
+        pair: p.pair, longPct: longPct, shortPct: 100 - longPct,
+        source: source, category: p.category,
+      ));
+    }
+    return list;
+  }
+
+  double _momentumSentiment(ForexPair p) {
+    final clamped = p.changePct.clamp(-2.0, 2.0);
+    final bias = 50 - (clamped * 8);
+    return bias.clamp(15.0, 85.0);
+  }
   bool                get isLoading   => _isLoading;
   DateTime?           get lastUpdated => _lastUpdated;
   Map<String,bool>    get apiStatus   => _apiStatus;
 
-  Timer? _priceTimer, _newsTimer, _calendarTimer, _worldTimer, _cotTimer;
+  Timer? _priceTimer, _newsTimer, _calendarTimer, _worldTimer, _cotTimer, _sentimentTimer;
 
   Future<void> initialize() async {
     _isLoading = true;
@@ -54,7 +85,7 @@ class DataProvider extends ChangeNotifier {
     try {
       await Future.wait([
         _fetchForex(), _fetchCrypto(), _fetchAllNews(),
-        _fetchCalendar(), _fetchCot(), _fetchWorldEvents(),
+        _fetchCalendar(), _fetchCot(), _fetchWorldEvents(), _fetchSentiment(),
       ]);
       await Future.wait([_fetchIndices(), _fetchCommodities(), _fetchFutures()]);
       _fetchStocks();
@@ -76,7 +107,8 @@ class DataProvider extends ChangeNotifier {
     _newsTimer     = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchAllNews());
     _worldTimer    = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchWorldEvents());
     _cotTimer      = Timer.periodic(const Duration(minutes: 30), (_) => _fetchCot());
-    _calendarTimer = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
+    _calendarTimer   = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
+    _sentimentTimer  = Timer.periodic(const Duration(minutes: 10), (_) => _fetchSentiment());
   }
 
   Future<void> _fetchForex() async {
@@ -433,7 +465,16 @@ class DataProvider extends ChangeNotifier {
         'CRUDE OIL': 'WTI OIL', 'WHEAT': 'WHEAT', 'CORN': 'CORN',
       }));
       list.addAll(_parseCot(await _api.getIndicesCot(), 'Indices', {
-        'S&P 500': 'S&P 500', 'NASDAQ': 'NASDAQ', 'DOW JONES': 'DOW JONES',
+        'S&P 500': 'S&P 500', 'NASDAQ': 'NASDAQ', 'DOW JONES': 'DOW JONES', 'NIKKEI': 'NIKKEI',
+      }));
+      list.addAll(_parseCot(await _api.getStocksCot(), 'Stocks', {
+        'S&P 500 STOCK INDEX': 'SPY ETF', 'NASDAQ-100 STOCK INDEX': 'QQQ ETF', 'RUSSELL 2000': 'IWM ETF',
+      }));
+      list.addAll(_parseCot(await _api.getCryptoCot(), 'Crypto', {
+        'BITCOIN': 'BTC/USD', 'ETHER CASH SETTLED': 'ETH/USD',
+      }));
+      list.addAll(_parseCot(await _api.getFuturesCot(), 'Futures', {
+        'WHEAT-SRW': 'WHEAT', 'CORN': 'CORN', 'SOYBEANS': 'SOYBEANS',
       }));
       if (list.isNotEmpty) {
         final cats  = ['Forex', 'Commodities', 'Indices'];
@@ -598,6 +639,28 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _fetchSentiment() async {
+    try {
+      final res = await _api.fetchMyfxbookSentiment();
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        final symbols = data['symbols'] as List? ?? [];
+        final list = <SentimentData>[];
+        for (final s in symbols) {
+          final name = s['name'] as String? ?? '';
+          final longPct = (s['longPercentage'] as num?)?.toDouble() ?? 50.0;
+          final shortPct = (s['shortPercentage'] as num?)?.toDouble() ?? 50.0;
+          String cat = 'Forex';
+          if (['BTCUSD','ETHUSD','LTCUSD'].contains(name)) cat = 'Crypto';
+          else if (['XAUUSD','XAGUSD','USOIL'].contains(name)) cat = 'Commodities';
+          else if (['SPX500','NAS100','US30'].contains(name)) cat = 'Indices';
+          list.add(SentimentData(pair: name, longPct: longPct, shortPct: shortPct, source: 'Myfxbook', category: cat));
+        }
+        if (list.isNotEmpty) { _liveSentiment = list; notifyListeners(); }
+      }
+    } catch (e) { print('Sentiment: '); }
+  }
+
   @override
   void dispose() {
     _priceTimer?.cancel();
@@ -605,10 +668,22 @@ class DataProvider extends ChangeNotifier {
     _worldTimer?.cancel();
     _cotTimer?.cancel();
     _calendarTimer?.cancel();
+    _sentimentTimer?.cancel();
     _api.dispose();
     super.dispose();
   }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

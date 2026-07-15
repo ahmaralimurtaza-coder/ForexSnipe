@@ -20,13 +20,13 @@ class ApiService {
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>');
   }
-  static const _finnhubKey        = 'd90cstpr01qk8bfkjeq0d90cstpr01qk8bfkjeqg';
-  static const _newsApiKey        = '1b64f827220b48f7b3645d6d3aa9edf9';
-  static const _mediastackKey     = '0f4517ce9ef6a7891cba0892517e9b6a';
-  static const _tiingoKey         = '2ba30238a0a10fb0d87a54e1484d6716f176527d';
-  static const _fixerKey          = 'f91677b613d3fa627db71b15e896bb09';
-  static const _currencyFreaksKey = '65039742f4c04d90841f02f8a2ff97c0';
-  static const _goldApiKey        = 'goldapi-5ff40f39ae501ec41f76b22d05071533-io';
+  static const _finnhubKey        = String.fromEnvironment('FINNHUB_KEY');
+  static const _newsApiKey        = String.fromEnvironment('NEWS_API_KEY');
+  static const _mediastackKey     = String.fromEnvironment('MEDIASTACK_KEY');
+  static const _tiingoKey         = String.fromEnvironment('TIINGO_KEY');
+  static const _fixerKey          = String.fromEnvironment('FIXER_KEY');
+  static const _currencyFreaksKey = String.fromEnvironment('CURRENCY_FREAKS_KEY');
+  static const _goldApiKey        = String.fromEnvironment('GOLD_API_KEY');
 
   static const _frankfurter    = 'https://api.frankfurter.app';
   static const _exchangeRate   = 'https://open.er-api.com/v6/latest/USD';
@@ -60,7 +60,7 @@ class ApiService {
   Future<Map<String, double>> getCurrencyFreaksRates() async {
     try {
       final res = await _client
-          .get(Uri.parse('='), headers: _h)
+          .get(Uri.parse('$_currencyFreaks?apikey=$_currencyFreaksKey'), headers: _h)
           .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final rates = json.decode(res.body)['rates'] as Map<String, dynamic>?;
@@ -73,7 +73,7 @@ class ApiService {
   Future<Map<String, double>> getFrankfurterRates() async {
     try {
       final res = await _client
-          .get(Uri.parse('/latest?from=USD'), headers: _h)
+          .get(Uri.parse('$_frankfurter/latest?from=USD'), headers: _h)
           .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final data  = json.decode(res.body);
@@ -132,7 +132,7 @@ class ApiService {
   Future<Map<String, dynamic>> getGoldApiPrice(String metal) async {
     try {
       final res = await _client.get(
-        Uri.parse('//USD'),
+        Uri.parse('$_goldApi/$metal/USD'),
         headers: {
           ..._h,
           'x-access-token': _goldApiKey,
@@ -179,7 +179,7 @@ class ApiService {
   Future<Map<String, dynamic>> getBinanceTicker(String symbol) async {
     try {
       final res = await _client
-          .get(Uri.parse('/ticker/24hr?symbol='), headers: _h)
+          .get(Uri.parse('$_binance/ticker/24hr?symbol=$symbol'), headers: _h)
           .timeout(const Duration(seconds: 8));
       if (res.statusCode == 200) {
         final d = json.decode(res.body);
@@ -196,7 +196,7 @@ class ApiService {
   Future<List<double>> getBinanceSparkline(String symbol) async {
     try {
       final res = await _client
-          .get(Uri.parse('/klines?symbol=&interval=1h&limit=10'), headers: _h)
+          .get(Uri.parse('$_binance/klines?symbol=$symbol&interval=1h&limit=10'), headers: _h)
           .timeout(const Duration(seconds: 8));
       if (res.statusCode == 200) {
         return (json.decode(res.body) as List).map((k) => double.tryParse(k[4].toString()) ?? 0.0).toList();
@@ -292,7 +292,7 @@ class ApiService {
     for (final base in [_yahoo, _yahoo2]) {
       try {
         final res = await _client
-            .get(Uri.parse('/=1d&range=5d'), headers: _h)
+            .get(Uri.parse('$base/$symbol?interval=1d&range=5d'), headers: _h)
             .timeout(const Duration(seconds: 25));
         if (res.statusCode == 200) {
           final result = json.decode(res.body)['chart']?['result'];
@@ -401,7 +401,7 @@ class ApiService {
       final now  = DateTime.now();
       final from = now.subtract(const Duration(days: 7)).toIso8601String().substring(0,10);
       final to   = now.add(const Duration(days: 7)).toIso8601String().substring(0,10);
-      final url  = 'https://finnhub.io/api/v1/calendar/economic?from=' + from + '&to=' + to + '&token=d90cstpr01qk8bfkjeq0d90cstpr01qk8bfkjeqg';
+      final url  = 'https://finnhub.io/api/v1/calendar/economic?from=' + from + '&to=' + to + '&token=' + _finnhubKey;
       final res  = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         return ((json.decode(res.body)['economicCalendar'] as List?) ?? [])
@@ -422,16 +422,48 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getCommodityCot() async {
     try {
-      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$limit=20&\$order=report_date_as_yyyy_mm_dd DESC&cftc_market_code=CMX';
+      final where = Uri.encodeComponent("market_and_exchange_names like '%GOLD%' OR market_and_exchange_names like '%SILVER%' OR market_and_exchange_names like '%CRUDE OIL%' OR market_and_exchange_names like '%WHEAT%' OR market_and_exchange_names like '%CORN%'");
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=40&\$order=report_date_as_yyyy_mm_dd DESC';
       final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
     } catch (e) { print('CommodityCOT: $e'); }
     return [];
   }
 
+  Future<List<Map<String, dynamic>>> getStocksCot() async {
+    try {
+      final where = Uri.encodeComponent("market_and_exchange_names like '%S&P 500 STOCK INDEX%' OR market_and_exchange_names like '%NASDAQ-100 STOCK INDEX%' OR market_and_exchange_names like '%RUSSELL 2000%'");
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=30&\$order=report_date_as_yyyy_mm_dd DESC';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('StocksCOT: '); }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getCryptoCot() async {
+    try {
+      final where = Uri.encodeComponent("market_and_exchange_names like '%BITCOIN%' OR market_and_exchange_names like '%ETHER%'");
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=20&\$order=report_date_as_yyyy_mm_dd DESC';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('CryptoCOT: '); }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> getFuturesCot() async {
+    try {
+      final where = Uri.encodeComponent("market_and_exchange_names like '%WHEAT-SRW%' OR market_and_exchange_names like '%CORN%' OR market_and_exchange_names like '%SOYBEANS%'");
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=30&\$order=report_date_as_yyyy_mm_dd DESC';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (e) { print('FuturesCOT: '); }
+    return [];
+  }
+
   Future<List<Map<String, dynamic>>> getIndicesCot() async {
     try {
-      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$limit=20&\$order=report_date_as_yyyy_mm_dd DESC&cftc_market_code=CME';
+      final where = Uri.encodeComponent("market_and_exchange_names like '%S&P 500%' OR market_and_exchange_names like '%NASDAQ%' OR market_and_exchange_names like '%DOW JONES%' OR market_and_exchange_names like '%NIKKEI%'");
+      final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=40&\$order=report_date_as_yyyy_mm_dd DESC';
       final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
     } catch (e) { print('IndicesCOT: $e'); }
@@ -439,6 +471,10 @@ class ApiService {
   }
 
   void dispose() { _client.close(); }
+
+  Future<http.Response> fetchMyfxbookSentiment() async {
+    return await _client.get(Uri.parse('https://www.myfxbook.com/api/get-community-outlook.json'), headers: _h).timeout(const Duration(seconds: 10));
+  }
 
   // NEWS
   Future<List<Map<String, dynamic>>> _fetchRss(String url, String source) async {
@@ -619,6 +655,11 @@ class ApiService {
     return [];
   }
 }
+
+
+
+
+
 
 
 

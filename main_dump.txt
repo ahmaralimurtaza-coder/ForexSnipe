@@ -17,7 +17,6 @@ import 'screens/sentiment_screen.dart';
 import 'screens/barchart_screen.dart';
 import 'screens/ai_screen.dart';
 import 'screens/sources_screen.dart';
-import 'screens/quiz_screen.dart';
 import 'widgets/common_widgets.dart';
 
 void main() {
@@ -106,19 +105,18 @@ class _HomeShellState extends State<HomeShell> {
     _Tab(icon: Icons.public,                  label: 'World'),
     _Tab(icon: Icons.sentiment_satisfied_alt, label: 'Sentiment'),
 
-    _Tab(icon: Icons.quiz_outlined,            label: 'Quiz'),
     _Tab(icon: Icons.smart_toy_outlined,      label: 'AI Chat'),
     _Tab(icon: Icons.hub_outlined,            label: 'Sources'),
   ];
 
   final _screens = const [
     PricesScreen(), CotScreen(), CalendarScreen(), NewsScreen(), WorldScreen(),
-    SentimentScreen(), QuizScreen(), AiScreen(), SourcesScreen(),
+    SentimentScreen(), AiScreen(), SourcesScreen(),
   ];
 
   final _titles = const [
     'Live Prices', 'COT Report', 'Economic Calendar', 'Market News', 'World Monitor',
-    'Sentiment', 'Trading Quiz', 'AI Analyst', 'Data Sources',
+    'Sentiment', 'AI Analyst', 'Data Sources',
   ];
 
   @override
@@ -258,7 +256,6 @@ class _Tab {
   final String label;
   const _Tab({required this.icon, required this.label});
 }
-
 
 
 
