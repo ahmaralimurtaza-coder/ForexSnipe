@@ -15,7 +15,7 @@ class _AiScreenState extends State<AiScreen> {
   bool _showLearn = false;
   final _scroll = ScrollController();
   final List<_Msg> _messages = [
-    _Msg(text: 'Hello! I am your ForexSnipe AI Analyst. I can discuss forex pairs, central banks, technical analysis, chart patterns, risk management, trading psychology, COT data, crypto, commodities, and live prices from this app. Ask me anything!', isUser: false),
+    _Msg(text: 'Hello! I am your ForexSnipe AI Analyst. I can discuss forex pairs, central banks, technical analysis, chart patterns, risk management, trading psychology, COT data, crypto, commodities, live prices, and the in-app Trading Quiz from this app. Ask me anything!', isUser: false),
   ];
   bool _loading = false;
 
@@ -26,6 +26,7 @@ class _AiScreenState extends State<AiScreen> {
     'What is risk management?',
     'Explain head and shoulders pattern',
     'What is leverage in forex?',
+    'What is the trading quiz?',
   ];
 
   void _send(String text) {
@@ -70,7 +71,12 @@ class _AiScreenState extends State<AiScreen> {
 
     // ═══ APP LIMITATIONS & DATA ACCURACY ═══
     if (t.contains('limitation') || t.contains('delay') || t.contains('accuracy') || t.contains('drawback') || t.contains('real time') || t.contains('realtime') || t.contains('live data') || t.contains('data source') || t.contains('how accurate') || t.contains('app info')) {
-      return 'ForexSnipe Data Sources & Limitations:\n\nPRICES TAB\n- Forex: 15-60 min delayed (ExchangeRate/Frankfurter APIs)\n- Crypto BTC/ETH: Real-time via Binance\n- Gold XAU/XAG: Near real-time via GoldAPI\n- Stocks/Indices: 15-min delayed via Yahoo Finance\n\nCOT TAB\n- Data from CFTC.gov, released every Friday\n- Always 1 week behind by design\n- Numbers accurate, directly from CFTC\n\nNEWS TAB\n- Auto-refreshes every 5 minutes\n- Sources: Reuters, Bloomberg, CNBC, Finnhub\n\nCALENDAR TAB\n- Finnhub API, refreshes every 15 minutes\n\nWORLD TAB\n- Earthquakes: USGS, real-time (within minutes)\n- Disasters: NASA EONET (wildfires, storms, sea ice), refreshes every 5 minutes\n- World Events: GDELT global news monitor, ~15 min delay\n\nSENTIMENT TAB\n- Derived from COT data, same 1-week delay\n\nSOURCES TAB (Barchart Analysis)\n- Barchart Trader Cheat Sheet embedded\n- S/R levels, Pivots, Fibonacci, Moving Averages\n- Updated daily from Barchart.com\n\nWARNING: Use ForexSnipe for context only. Always verify on TradingView before trading.';
+      return 'ForexSnipe Data Sources & Limitations:\n\nPRICES TAB\n- Forex: 15-60 min delayed (ExchangeRate/Frankfurter APIs)\n- Crypto BTC/ETH: Real-time via Binance\n- Gold XAU/XAG: Near real-time via GoldAPI\n- Stocks/Indices: 15-min delayed via Yahoo Finance\n\nCOT TAB\n- Data from CFTC.gov, released every Friday\n- Always 1 week behind by design\n- Numbers accurate, directly from CFTC\n\nNEWS TAB\n- Auto-refreshes every 5 minutes\n- Sources: Reuters, Bloomberg, CNBC, Finnhub\n\nCALENDAR TAB\n- Finnhub API, refreshes every 15 minutes\n\nWORLD TAB\n- Earthquakes: USGS, real-time (within minutes)\n- Disasters: NASA EONET (wildfires, storms, sea ice), refreshes every 5 minutes\n- World Events: GDELT global news monitor, ~15 min delay\n\nSENTIMENT TAB\n- Derived from COT data, same 1-week delay\n\nSOURCES TAB (Barchart Analysis)\n- Barchart Trader Cheat Sheet embedded\n- S/R levels, Pivots, Fibonacci, Moving Averages\n- Updated daily from Barchart.com\n\nQUIZ TAB\n- 170 questions, fully offline, no network needed\n- Easy (20), Medium (50), Hard (100) difficulty levels\n- Shuffled every attempt, instant feedback with explanations\n\nWARNING: Use ForexSnipe for context only. Always verify on TradingView before trading.';
+    }
+
+    // ═══ QUIZ FEATURE ═══
+    if (t.contains('quiz') || t.contains('test my knowledge') || t.contains('test me') || t.contains('flashcard')) {
+      return 'ForexSnipe Trading Quiz:\n\nFind it in the bottom nav bar (Quiz tab)\n\nThree difficulty levels:\n- Easy: 20 questions on candlestick basics and simple chart patterns\n- Medium: 50 questions on advanced candlesticks, chart patterns and indicators\n- Hard: 100 questions on prop firms, brokers, risk management, Smart Money Concepts and macro fundamentals\n\n170 total unique questions, shuffled every attempt\nInstant feedback with explanations after each answer\nScore tracking plus a review of missed questions at the end\n\nGreat way to test what you\'ve learned from this AI Analyst!';
     }
 
     // ═══ BARCHART BENEFITS ═══
@@ -253,7 +259,7 @@ class _AiScreenState extends State<AiScreen> {
     }
 
     // ═══ DEFAULT / GENERAL ═══
-    return 'I can help analyze that. As your ForexSnipe AI Analyst, I cover:\n\n📊 Currency pairs (EUR/USD, GBP/USD, USD/JPY, etc) with live prices\n🏦 Central banks (Fed, ECB, BoE, BoJ, RBA)\n📈 Technical analysis (RSI, MACD, patterns, Fibonacci)\n💰 Risk management & trading psychology\n📅 Economic data (NFP, CPI, GDP, PMI)\n🎯 COT positioning & retail sentiment\n₿ Crypto (BTC, ETH) and commodities (Gold, Oil)\n\nTry asking about a specific pair, indicator, or concept for a detailed breakdown!';
+    return 'I can help analyze that. As your ForexSnipe AI Analyst, I cover:\n\n📊 Currency pairs (EUR/USD, GBP/USD, USD/JPY, etc) with live prices\n🏦 Central banks (Fed, ECB, BoE, BoJ, RBA)\n📈 Technical analysis (RSI, MACD, patterns, Fibonacci)\n💰 Risk management & trading psychology\n📅 Economic data (NFP, CPI, GDP, PMI)\n🎯 COT positioning & retail sentiment\n₿ Crypto (BTC, ETH) and commodities (Gold, Oil)\n🧠 Trading Quiz — test yourself with 170 questions\n\nTry asking about a specific pair, indicator, or concept for a detailed breakdown!';
   }
 
   @override
@@ -382,6 +388,9 @@ class _TypingIndicatorState extends State<_TypingIndicator> with SingleTickerPro
       AnimatedBuilder(animation:_a,builder:(_,__)=>Row(children:List.generate(3,(i)=>Container(width:8,height:8,margin:const EdgeInsets.only(right:4),decoration:BoxDecoration(shape:BoxShape.circle,color:AppColors.green.withOpacity(0.3+0.7*_a.value)))))),
     ]));
 }
+
+
+
 
 
 

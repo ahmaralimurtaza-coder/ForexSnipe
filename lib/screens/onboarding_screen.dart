@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
@@ -18,51 +18,63 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final _pages = const [
     _OnboardPage(
-      emoji: '🎯',
+      emoji: 'ðŸŽ¯',
       title: 'Snipe the Market\nWith Precision',
       color: AppColors.green,
       points: [
-        '✅  Real-time prices for Forex, Stocks,\n      Crypto, Indices & Commodities',
-        '✅  Animated live ticker with 50+ instruments',
-        '✅  Sparkline mini-charts on every card',
-        '✅  Auto-updates every 3 seconds live',
-        '✅  Powered by Finnhub, Twelve Data\n      & Alpha Vantage — all FREE',
+        'âœ…  Real-time prices for Forex, Stocks,\n      Crypto, Indices & Commodities',
+        'âœ…  Animated live ticker with 50+ instruments',
+        'âœ…  Sparkline mini-charts on every card',
+        'âœ…  Auto-updates every 3 seconds live',
+        'âœ…  Powered by Finnhub, Twelve Data\n      & Alpha Vantage â€” all FREE',
       ],
     ),
     _OnboardPage(
-      emoji: '🏛️',
-      title: 'COT Report —\nTrack Smart Money',
+      emoji: 'ðŸ›ï¸',
+      title: 'COT Report â€”\nTrack Smart Money',
       color: AppColors.gold,
       points: [
-        '✅  Official CFTC data — 100% free',
-        '✅  See what hedge funds &\n      institutions are doing weekly',
-        '✅  Net positioning donut charts\n      for all asset classes',
-        '✅  Forex, Indices, Crypto, Stocks,\n      Commodities & Futures COT data',
-        '✅  Updated every Friday via\n      CFTC.gov & Barchart direct',
+        'âœ…  Official CFTC data â€” 100% free',
+        'âœ…  See what hedge funds &\n      institutions are doing weekly',
+        'âœ…  Net positioning donut charts\n      for all asset classes',
+        'âœ…  Forex, Indices, Crypto, Stocks,\n      Commodities & Futures COT data',
+        'âœ…  Updated every Friday via\n      CFTC.gov & Barchart direct',
       ],
     ),
     _OnboardPage(
-      emoji: '📅',
+      emoji: 'ðŸ“…',
       title: 'Economic Calendar\n& Market News',
       color: Color(0xFF00D4FF),
       points: [
-        '✅  HIGH / MED / LOW impact filters\n      for all 6 market categories',
-        '✅  NFP, CPI, GDP, OPEC, Earnings,\n      ETF decisions — all tracked',
-        '✅  AI-powered sentiment on\n      every news article',
-        '✅  Bullish / Bearish / Neutral\n      news classification',
-        '✅  Sources: Reuters, Bloomberg,\n      CoinDesk, CNBC, FXStreet & more',
+        'âœ…  HIGH / MED / LOW impact filters\n      for all 6 market categories',
+        'âœ…  NFP, CPI, GDP, OPEC, Earnings,\n      ETF decisions â€” all tracked',
+        'âœ…  AI-powered sentiment on\n      every news article',
+        'âœ…  Bullish / Bearish / Neutral\n      news classification',
+        'âœ…  Sources: Reuters, Bloomberg,\n      CoinDesk, CNBC, FXStreet & more',
       ],
     ),
     _OnboardPage(
-      emoji: '🤖',
+      emoji: 'ðŸ¤–',
       title: 'AI Sniper Analyst\n& Sentiment Tools',
       color: AppColors.red,
       points: [
-        '✅  Ask AI anything about forex,\n      stocks, crypto or COT data',
-        '✅  Retail sentiment for all categories\n      — Myfxbook, IG, CME, Finviz',
-        '✅  Extreme positioning alerts\n      (75%+ long/short warnings)',
-        '✅  Dark & Light mode toggle\n      saved across sessions',
-        '✅  In-app browser — no switching\n      apps to read source sites',
+        'âœ…  Ask AI anything about forex,\n      stocks, crypto or COT data',
+        'âœ…  Retail sentiment for all categories\n      â€” Myfxbook, IG, CME, Finviz',
+        'âœ…  Extreme positioning alerts\n      (75%+ long/short warnings)',
+        'âœ…  Dark & Light mode toggle\n      saved across sessions',
+        'âœ…  In-app browser â€” no switching\n      apps to read source sites',
+      ],
+    ),
+    _OnboardPage(
+      emoji: '🧠',
+      title: 'Trading Quiz\nTest Your Skills',
+      color: Color(0xFFFF9800),
+      points: [
+        '✅  170 unique questions across\n      Easy, Medium & Hard levels',
+        '✅  Easy: candlestick & chart basics\n      Medium: advanced patterns & indicators',
+        '✅  Hard: prop firms, brokers, risk\n      management & Smart Money Concepts',
+        '✅  Instant feedback with explanations\n      after every answer',
+        '✅  Fully offline — works with\n      zero internet connection',
       ],
     ),
   ];
@@ -119,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: SafeArea(
         child: Column(children: [
 
-          // ── Top bar: logo + skip ──
+          // â”€â”€ Top bar: logo + skip â”€â”€
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -167,7 +179,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // ── Page indicator ──
+          // â”€â”€ Page indicator â”€â”€
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_pages.length, (i) {
@@ -195,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           const SizedBox(height: 8),
 
-          // ── Pages ──
+          // â”€â”€ Pages â”€â”€
           Expanded(
             child: PageView.builder(
               controller: _pageCtrl,
@@ -212,7 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // ── Bottom button ──
+          // â”€â”€ Bottom button â”€â”€
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: AnimatedContainer(
@@ -244,8 +256,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     Text(
                       _page == _pages.length - 1
-                          ? '🎯  Start Sniping Markets'
-                          : 'Next  →',
+                          ? 'ðŸŽ¯  Start Sniping Markets'
+                          : 'Next  â†’',
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -264,7 +276,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 }
 
-// ── Individual page content ──
+// â”€â”€ Individual page content â”€â”€
 class _PageContent extends StatelessWidget {
   final _OnboardPage page;
   const _PageContent({required this.page});
@@ -278,7 +290,7 @@ class _PageContent extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
 
-          // ── Emoji in glowing circle ──
+          // â”€â”€ Emoji in glowing circle â”€â”€
           Center(
             child: Container(
               width: 110,
@@ -309,7 +321,7 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // ── Title ──
+          // â”€â”€ Title â”€â”€
           Center(
             child: Text(
               page.title,
@@ -332,7 +344,7 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 28),
 
-          // ── Feature points ──
+          // â”€â”€ Feature points â”€â”€
           ...page.points.map((point) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Container(
@@ -363,7 +375,7 @@ class _PageContent extends StatelessWidget {
   }
 }
 
-// ── Data class for each onboarding page ──
+// â”€â”€ Data class for each onboarding page â”€â”€
 class _OnboardPage {
   final String emoji;
   final String title;
@@ -377,3 +389,4 @@ class _OnboardPage {
     required this.points,
   });
 }
+
