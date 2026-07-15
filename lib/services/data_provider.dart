@@ -39,8 +39,21 @@ class DataProvider extends ChangeNotifier {
   List<CotData>       get cotData     => _cotData;
   List<SentimentData> get sentiment {
     final cotMap = {for (final c in _cotData) c.pair: c};
+    final liveMap = <String, SentimentData>{};
+    for (final s in _liveSentiment) {
+      liveMap[s.pair.replaceAll('/', '').toUpperCase()] = s;
+    }
     final list = <SentimentData>[];
     for (final p in _pairs) {
+      final key = p.pair.replaceAll('/', '').toUpperCase();
+      final live = liveMap[key];
+      if (live != null) {
+        list.add(SentimentData(
+          pair: p.pair, longPct: live.longPct, shortPct: live.shortPct,
+          source: 'Myfxbook', category: p.category,
+        ));
+        continue;
+      }
       final c = cotMap[p.pair];
       double longPct;
       String source;
@@ -108,7 +121,7 @@ class DataProvider extends ChangeNotifier {
     _worldTimer    = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchWorldEvents());
     _cotTimer      = Timer.periodic(const Duration(minutes: 30), (_) => _fetchCot());
     _calendarTimer   = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
-    _sentimentTimer  = Timer.periodic(const Duration(minutes: 10), (_) => _fetchSentiment());
+    _sentimentTimer  = Timer.periodic(const Duration(minutes: 20), (_) => _fetchSentiment());
   }
 
   Future<void> _fetchForex() async {
@@ -641,24 +654,30 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> _fetchSentiment() async {
     try {
-      final res = await _api.fetchMyfxbookSentiment();
+      final session = await _api.loginMyfxbook();
+      if (session == null) { print('Sentiment: myfxbook login failed'); return; }
+      final res = await _api.fetchMyfxbookSentiment(session);
       if (res.statusCode == 200) {
         final data = json.decode(res.body);
         final symbols = data['symbols'] as List? ?? [];
         final list = <SentimentData>[];
         for (final s in symbols) {
-          final name = s['name'] as String? ?? '';
+          final name = (s['name'] as String? ?? '').toUpperCase();
           final longPct = (s['longPercentage'] as num?)?.toDouble() ?? 50.0;
           final shortPct = (s['shortPercentage'] as num?)?.toDouble() ?? 50.0;
           String cat = 'Forex';
-          if (['BTCUSD','ETHUSD','LTCUSD'].contains(name)) cat = 'Crypto';
-          else if (['XAUUSD','XAGUSD','USOIL'].contains(name)) cat = 'Commodities';
-          else if (['SPX500','NAS100','US30'].contains(name)) cat = 'Indices';
+          if (['BTCUSD','ETHUSD','LTCUSD','XRPUSD'].contains(name)) cat = 'Crypto';
+          else if (['XAUUSD','XAGUSD','USOIL','UKOIL'].contains(name)) cat = 'Commodities';
+          else if (['SPX500','NAS100','US30','UK100','GER40','JPN225'].contains(name)) cat = 'Indices';
           list.add(SentimentData(pair: name, longPct: longPct, shortPct: shortPct, source: 'Myfxbook', category: cat));
         }
-        if (list.isNotEmpty) { _liveSentiment = list; notifyListeners(); }
+        if (list.isNotEmpty) {
+          _liveSentiment = list;
+          _apiStatus['sentiment'] = true;
+          notifyListeners();
+        }
       }
-    } catch (e) { print('Sentiment: '); }
+    } catch (e) { print('Sentiment: $e'); }
   }
 
   @override
@@ -673,6 +692,9 @@ class DataProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+
+
 
 
 

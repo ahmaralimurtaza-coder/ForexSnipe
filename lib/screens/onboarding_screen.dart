@@ -18,63 +18,63 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final _pages = const [
     _OnboardPage(
-      emoji: 'ðŸŽ¯',
+      emoji: '\u{1F3AF}',
       title: 'Snipe the Market\nWith Precision',
       color: AppColors.green,
       points: [
-        'âœ…  Real-time prices for Forex, Stocks,\n      Crypto, Indices & Commodities',
-        'âœ…  Animated live ticker with 50+ instruments',
-        'âœ…  Sparkline mini-charts on every card',
-        'âœ…  Auto-updates every 3 seconds live',
-        'âœ…  Powered by Finnhub, Twelve Data\n      & Alpha Vantage â€” all FREE',
+        '\u{2705}  Real-time prices for Forex, Stocks,\n      Crypto, Indices & Commodities',
+        '\u{2705}  Animated live ticker with 50+ instruments',
+        '\u{2705}  Sparkline mini-charts on every card',
+        '\u{2705}  Auto-updates every 3 seconds live',
+        '\u{2705}  Powered by Finnhub, Twelve Data\n      & Alpha Vantage \u{2014} all FREE',
       ],
     ),
     _OnboardPage(
-      emoji: 'ðŸ›ï¸',
-      title: 'COT Report â€”\nTrack Smart Money',
+      emoji: '\u{1F3DB}\u{FE0F}',
+      title: 'COT Report \u{2014}\nTrack Smart Money',
       color: AppColors.gold,
       points: [
-        'âœ…  Official CFTC data â€” 100% free',
-        'âœ…  See what hedge funds &\n      institutions are doing weekly',
-        'âœ…  Net positioning donut charts\n      for all asset classes',
-        'âœ…  Forex, Indices, Crypto, Stocks,\n      Commodities & Futures COT data',
-        'âœ…  Updated every Friday via\n      CFTC.gov & Barchart direct',
+        '\u{2705}  Official CFTC data \u{2014} 100% free',
+        '\u{2705}  See what hedge funds &\n      institutions are doing weekly',
+        '\u{2705}  Net positioning donut charts\n      for all asset classes',
+        '\u{2705}  Forex, Indices, Crypto, Stocks,\n      Commodities & Futures COT data',
+        '\u{2705}  Updated every Friday via\n      CFTC.gov & Barchart direct',
       ],
     ),
     _OnboardPage(
-      emoji: 'ðŸ“…',
+      emoji: '\u{1F4C5}',
       title: 'Economic Calendar\n& Market News',
       color: Color(0xFF00D4FF),
       points: [
-        'âœ…  HIGH / MED / LOW impact filters\n      for all 6 market categories',
-        'âœ…  NFP, CPI, GDP, OPEC, Earnings,\n      ETF decisions â€” all tracked',
-        'âœ…  AI-powered sentiment on\n      every news article',
-        'âœ…  Bullish / Bearish / Neutral\n      news classification',
-        'âœ…  Sources: Reuters, Bloomberg,\n      CoinDesk, CNBC, FXStreet & more',
+        '\u{2705}  HIGH / MED / LOW impact filters\n      for all 6 market categories',
+        '\u{2705}  NFP, CPI, GDP, OPEC, Earnings,\n      ETF decisions \u{2014} all tracked',
+        '\u{2705}  AI-powered sentiment on\n      every news article',
+        '\u{2705}  Bullish / Bearish / Neutral\n      news classification',
+        '\u{2705}  Sources: Reuters, Bloomberg,\n      CoinDesk, CNBC, FXStreet & more',
       ],
     ),
     _OnboardPage(
-      emoji: 'ðŸ¤–',
+      emoji: '\u{1F916}',
       title: 'AI Sniper Analyst\n& Sentiment Tools',
       color: AppColors.red,
       points: [
-        'âœ…  Ask AI anything about forex,\n      stocks, crypto or COT data',
-        'âœ…  Retail sentiment for all categories\n      â€” Myfxbook, IG, CME, Finviz',
-        'âœ…  Extreme positioning alerts\n      (75%+ long/short warnings)',
-        'âœ…  Dark & Light mode toggle\n      saved across sessions',
-        'âœ…  In-app browser â€” no switching\n      apps to read source sites',
+        '\u{2705}  Ask AI anything about forex,\n      stocks, crypto or COT data',
+        '\u{2705}  Retail sentiment for all categories\n      \u{2014} Myfxbook, IG, CME, Finviz',
+        '\u{2705}  Extreme positioning alerts\n      (75%+ long/short warnings)',
+        '\u{2705}  Dark & Light mode toggle\n      saved across sessions',
+        '\u{2705}  In-app browser \u{2014} no switching\n      apps to read source sites',
       ],
     ),
     _OnboardPage(
-      emoji: '🧠',
+      emoji: '\u{1F9E0}',
       title: 'Trading Quiz\nTest Your Skills',
       color: Color(0xFFFF9800),
       points: [
-        '✅  170 unique questions across\n      Easy, Medium & Hard levels',
-        '✅  Easy: candlestick & chart basics\n      Medium: advanced patterns & indicators',
-        '✅  Hard: prop firms, brokers, risk\n      management & Smart Money Concepts',
-        '✅  Instant feedback with explanations\n      after every answer',
-        '✅  Fully offline — works with\n      zero internet connection',
+        '\u{2705}  170 unique questions across\n      Easy, Medium & Hard levels',
+        '\u{2705}  Easy: candlestick & chart basics\n      Medium: advanced patterns & indicators',
+        '\u{2705}  Hard: prop firms, brokers, risk\n      management & Smart Money Concepts',
+        '\u{2705}  Instant feedback with explanations\n      after every answer',
+        '\u{2705}  Fully offline \u{2014} works with\n      zero internet connection',
       ],
     ),
   ];
@@ -131,13 +131,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: SafeArea(
         child: Column(children: [
 
-          // â”€â”€ Top bar: logo + skip â”€â”€
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // ForexSnipe logo
                 RichText(
                   text: TextSpan(
                     style: GoogleFonts.orbitron(
@@ -164,7 +162,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ],
                   ),
                 ),
-                // Skip button
                 TextButton(
                   onPressed: _goToApp,
                   child: Text(
@@ -179,7 +176,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // â”€â”€ Page indicator â”€â”€
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(_pages.length, (i) {
@@ -207,7 +203,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           const SizedBox(height: 8),
 
-          // â”€â”€ Pages â”€â”€
           Expanded(
             child: PageView.builder(
               controller: _pageCtrl,
@@ -224,7 +219,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
           ),
 
-          // â”€â”€ Bottom button â”€â”€
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: AnimatedContainer(
@@ -256,8 +250,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   children: [
                     Text(
                       _page == _pages.length - 1
-                          ? 'ðŸŽ¯  Start Sniping Markets'
-                          : 'Next  â†’',
+                          ? '\u{1F3AF}  Start Sniping Markets'
+                          : 'Next  \u{2192}',
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -276,7 +270,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 }
 
-// â”€â”€ Individual page content â”€â”€
 class _PageContent extends StatelessWidget {
   final _OnboardPage page;
   const _PageContent({required this.page});
@@ -290,7 +283,6 @@ class _PageContent extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
 
-          // â”€â”€ Emoji in glowing circle â”€â”€
           Center(
             child: Container(
               width: 110,
@@ -321,7 +313,6 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // â”€â”€ Title â”€â”€
           Center(
             child: Text(
               page.title,
@@ -344,7 +335,6 @@ class _PageContent extends StatelessWidget {
 
           const SizedBox(height: 28),
 
-          // â”€â”€ Feature points â”€â”€
           ...page.points.map((point) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Container(
@@ -375,7 +365,6 @@ class _PageContent extends StatelessWidget {
   }
 }
 
-// â”€â”€ Data class for each onboarding page â”€â”€
 class _OnboardPage {
   final String emoji;
   final String title;
@@ -389,4 +378,3 @@ class _OnboardPage {
     required this.points,
   });
 }
-

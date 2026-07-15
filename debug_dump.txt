@@ -493,32 +493,11 @@ class ApiService {
   Future<http.Response> fetchMyfxbookSentiment(String session) async {
     final url = 'https://www.myfxbook.com/api/get-community-outlook.json?session=$session';
     return await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 15));
-  }
-
-  // NEWS
-  Future<List<Map<String, dynamic>>> _fetchRss(String url, String source) async {
-    try {
-      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 20));
-      if (res.statusCode == 200) {
-        final body = utf8.decode(res.bodyBytes, allowMalformed: true);
-        final items = <Map<String, dynamic>>[];
-        final itemRegex = RegExp(r'<item[\s\S]*?<\/item>', multiLine: true);
-        final titleRegex = RegExp(r'<title>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/title>', dotAll: true);
-        final linkRegex = RegExp(r'<link>(.*?)<\/link>', dotAll: true);
-        final pubRegex = RegExp(r'<pubDate>(.*?)<\/pubDate>', dotAll: true);
-        for (final m in itemRegex.allMatches(body)) {
-          final chunk = m.group(0) ?? '';
-          final title = titleRegex.firstMatch(chunk)?.group(1)?.trim() ?? '';
-          final link  = linkRegex.firstMatch(chunk)?.group(1)?.trim() ?? '';
-          final pub   = pubRegex.firstMatch(chunk)?.group(1)?.trim() ?? '';
-          items.add({'title': title, 'source': source, 'url': link, 'publishedAt': pub});
-        }
-        return items;
-      }
-    } catch (e) { print('RSS $source: $e'); }
+  } catch (e) { print('RSS $source: $e'); }
     return [];
   }
-Future<List<Map<String, dynamic>>> getReutersNews() async {
+
+  Future<List<Map<String, dynamic>>> getReutersNews() async {
     final all = <Map<String, dynamic>>[];
     all.addAll(await _fetchRss('https://feeds.bbci.co.uk/news/business/rss.xml', 'BBC BUSINESS'));
     all.addAll(await _fetchRss('https://www.ft.com/rss/home', 'FT'));

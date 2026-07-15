@@ -70,7 +70,7 @@ class _SentimentScreenState extends State<SentimentScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionHeader(label: 'Myfxbook . IG Group . CME . Finviz', title: 'Market', titleAccent: 'Sentiment'),
+          const SectionHeader(label: 'Myfxbook · IG Group · CME · Finviz', title: 'Market', titleAccent: 'Sentiment'),
 
           // Category chips
           SizedBox(
@@ -210,80 +210,68 @@ class _SentimentCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: AppColors.gold.withOpacity(0.4)),
               ),
-              child: Text('\u{26A0}\u{FE0F} EXTREME', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppColors.gold)),
+              child: const Text('âš ï¸ EXTREME', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.gold)),
             ),
-            Text(data.source, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
+            Text(data.source, style: TextStyle(fontSize: 10,
                 color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
           ]),
         ]),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(
-            flex: data.longPct.round().clamp(1, 100),
-            child: Container(
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.green,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(8), bottomLeft: const Radius.circular(8),
-                  topRight: data.shortPct <= 0 ? const Radius.circular(8) : Radius.zero,
-                  bottomRight: data.shortPct <= 0 ? const Radius.circular(8) : Radius.zero,
-                ),
-              ),
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 10),
-              child: Text('${data.longPct.toStringAsFixed(1)}% LONG',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
-            ),
-          ),
-          Expanded(
-            flex: data.shortPct.round().clamp(1, 100),
-            child: Container(
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.red,
-                borderRadius: BorderRadius.only(
-                  topRight: const Radius.circular(8), bottomRight: const Radius.circular(8),
-                  topLeft: data.longPct <= 0 ? const Radius.circular(8) : Radius.zero,
-                  bottomLeft: data.longPct <= 0 ? const Radius.circular(8) : Radius.zero,
-                ),
-              ),
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 10),
-              child: Text('${data.shortPct.toStringAsFixed(1)}% SHORT',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
-            ),
-          ),
-        ]),
         const SizedBox(height: 10),
+
+        // Combined bar
+        Stack(children: [
+          Container(height: 22, decoration: BoxDecoration(
+              color: AppColors.red.withOpacity(0.25), borderRadius: BorderRadius.circular(6))),
+          FractionallySizedBox(
+            widthFactor: data.longPct / 100,
+            child: Container(height: 22, decoration: BoxDecoration(
+              color: AppColors.green,
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: [BoxShadow(color: AppColors.green.withOpacity(0.3), blurRadius: 8)],
+            )),
+          ),
+          Positioned.fill(child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text('${data.longPct.toStringAsFixed(1)}% LONG',
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white))),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text('${data.shortPct.toStringAsFixed(1)}% SHORT',
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white))),
+          ])),
+        ]),
+        const SizedBox(height: 8),
+
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Row(children: [
-            Container(width: 8, height: 8, decoration: BoxDecoration(
-                shape: BoxShape.circle, color: isLongBias ? AppColors.green : AppColors.red)),
-            const SizedBox(width: 6),
-            Text('Bias: ${isLongBias ? "LONG" : "SHORT"}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800,
-                color: isLongBias ? AppColors.green : AppColors.red)),
+            Container(width: 8, height: 8, margin: const EdgeInsets.only(right: 5),
+                decoration: BoxDecoration(shape: BoxShape.circle,
+                    color: isLongBias ? AppColors.green : AppColors.red)),
+            Text('Bias: ${isLongBias ? "LONG" : "SHORT"}',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                    color: isLongBias ? AppColors.green : AppColors.red)),
           ]),
-          Text('Retail Crowd', style: TextStyle(fontSize: 11,
-              color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
+          Text('Retail Crowd',
+              style: TextStyle(fontSize: 11, color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
         ]),
+
         if (isExtreme) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: AppColors.gold.withOpacity(0.08),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.gold.withOpacity(0.3)),
             ),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('\u{26A0}\u{FE0F}', style: TextStyle(fontSize: 13)),
-              const SizedBox(width: 8),
+            child: Row(children: [
+              const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.gold),
+              const SizedBox(width: 6),
               Expanded(child: Text(
-                  isLongBias
-                      ? 'Extreme long retail bias \u{2014} smart money may be positioned SHORT (contrarian signal)'
-                      : 'Extreme short retail bias \u{2014} smart money may be positioned LONG (contrarian signal)',
-                  style: const TextStyle(fontSize: 11.5, height: 1.4, color: AppColors.gold))),
+                isLongBias
+                    ? 'Extreme long retail bias â€” smart money may be positioned SHORT (contrarian signal)'
+                    : 'Extreme short retail bias â€” smart money may be positioned LONG (contrarian signal)',
+                style: const TextStyle(fontSize: 11, color: AppColors.gold),
+              )),
             ]),
           ),
         ],
@@ -291,3 +279,8 @@ class _SentimentCard extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
