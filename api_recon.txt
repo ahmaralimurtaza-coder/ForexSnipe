@@ -1,0 +1,185 @@
+﻿  Future<Map<String, dynamic>> _getBinanceCrypto() async {
+    const pairs = {
+      'BTC/USD':'BTCUSDT','ETH/USD':'ETHUSDT','BNB/USD':'BNBUSDT',
+      'SOL/USD':'SOLUSDT','XRP/USD':'XRPUSDT','ADA/USD':'ADAUSDT',
+      'DOGE':'DOGEUSDT','AVAX':'AVAXUSDT','LINK':'LINKUSDT','DOT':'DOTUSDT',
+    };
+    final result = <String, dynamic>{};
+    try {
+      for (final e in pairs.entries) {
+        final d = await getBinanceTicker(e.value);
+        if (d.isNotEmpty) {
+          final spark = await getBinanceSparkline(e.value);
+          result[e.key] = {...d, 'sparkline': spark};
+        }
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    } catch (e) { print('Binance crypto: $e'); }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> _getCoinCapCrypto() async {
+    try {
+      const ids = 'bitcoin,ethereum,binance-coin,solana,xrp,cardano,dogecoin,avalanche,chainlink,polkadot';
+      final res = await _client
+          .get(Uri.parse('/assets?ids=&limit=10'), headers: _h)
+          .timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) {
+        const nm = {
+          'bitcoin':'BTC/USD','ethereum':'ETH/USD','binance-coin':'BNB/USD',
+          'solana':'SOL/USD','xrp':'XRP/USD','cardano':'ADA/USD',
+          'dogecoin':'DOGE','avalanche':'AVAX','chainlink':'LINK','polkadot':'DOT',
+        };
+        final result = <String, dynamic>{};
+        for (final coin in json.decode(res.body)['data'] as List) {
+          final pair = nm[coin['id'] as String]; if (pair == null) continue;
+          final p  = double.tryParse(coin['priceUsd'].toString()) ?? 0.0;
+          final cp = double.tryParse(coin['changePercent24Hr'].toString()) ?? 0.0;
+          result[pair] = {'price':p,'changePct':cp,'change':p*cp/100,'sparkline':<double>[]};
+        }
+        return result;
+      }
+    } catch (e) { print('CoinCap: $e'); }
+    return {};
+  }
+
+  Future<Map<String, dynamic>> _getCoinGeckoCrypto() async {
+    try {
+      final url = '/coins/markets?vs_currency=usd'
+          '&ids=bitcoin,ethereum,binancecoin,solana,ripple,cardano,dogecoin,avalanche-2,chainlink,polkadot'
+          '&order=market_cap_desc&per_page=10&page=1&sparkline=true&price_change_percentage=24h';
+      final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) {
+        const idMap = {
+          'bitcoin':'BTC/USD','ethereum':'ETH/USD','binancecoin':'BNB/USD',
+          'solana':'SOL/USD','ripple':'XRP/USD','cardano':'ADA/USD',
+          'dogecoin':'DOGE','avalanche-2':'AVAX','chainlink':'LINK','polkadot':'DOT',
+        };
+        final result = <String, dynamic>{};
+        for (final coin in json.decode(res.body) as List) {
+          final pair = idMap[coin['id'] as String]; if (pair == null) continue;
+          final raw   = coin['sparkline_in_7d']?['price'] as List? ?? [];
+          final spark = raw.map((e) => (e as num).toDouble()).toList();
+          result[pair] = {
+            'price':     (coin['current_price']               as num?)?.toDouble() ?? 0.0,
+            'changePct': (coin['price_change_percentage_24h'] as num?)?.toDouble() ?? 0.0,
+            'change':    (coin['price_change_24h']            as num?)?.toDouble() ?? 0.0,
+            'sparkline': spark.length > 10 ? spark.sublist(spark.length - 10) : spark,
+          };
+        }
+        return result;
+      }
+    } catch (e) { print('CoinGecko: $e'); }
+    return {};
+  }
+
+  // ═══ STOCKS / INDICES / COMMODITIES / FUTURES ═══
+
+  Future<Map<String, dynamic>> getYahooQuote(String symbol) async {
+    for (final base in [_yahoo, _yahoo2]) {
+      try {
+        final res = await _client
+            .get(Uri.parse('$base/$symbol?interval=1d&range=5d'), headers: _h)
+            .timeout(const Duration(seconds: 25));
+        if (res.statusCode == 200) {
+          final result = json.decode(res.body)['chart']?['result'];
+          if (result != null && (result as List).isNotEmpty) {
+            final meta   = result[0]['meta'];
+            final price  = (meta['regularMarketPrice'] as num?)?.toDouble() ?? 0.0;
+            final prev   = (meta['chartPreviousClose'] as num?)?.toDouble() ?? 0.0;
+            final change = price - prev;
+            final chgPct = prev > 0 ? (change / prev) * 100 : 0.0;
+            final closes = result[0]['indicators']?['quote']?[0]?['close'] as List?;
+            List<double> spark = [];
+            if (closes != null) {
+              spark = closes.where((e) => e != null).map((e) => (e as num).toDouble()).toList();
+              if (spark.length > 10) spark = spark.sublist(spark.length - 10);
+            }
+            return {'price': price, 'change': change, 'changePct': chgPct, 'spark': spark};
+          }
+        }
+      } catch (e) { print('Yahoo (): $e'); }
+    }
+    return {};
+  }
+
+  Future<Map<String, Map<String, dynamic>>> getIndicesData() async {
+    const idx = {
+      'S&P 500':'^GSPC','NASDAQ':'^IXIC','DOW JONES':'^DJI','FTSE 100':'^FTSE',
+      'DAX 40':'^GDAXI','NIKKEI':'^N225','CAC 40':'^FCHI','HANG SENG':'^HSI',
+      'ASX 200':'^AXJO','VIX':'^VIX',
+    };
+    final r = <String, Map<String, dynamic>>{};
+    for (final e in idx.entries) {
+      final d = await getYahooQuote(e.value);
+      if (d.isNotEmpty) r[e.key] = d;
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+    return r;
+  }
+
+  Future<Map<String, Map<String, dynamic>>> getCommoditiesData() async {
+    // Step 1: Get Gold & Silver from GoldAPI (real-time)
+    final metals = await getPreciousMetals();
+
+    // Step 2: Get Oil, Gas, Copper, Wheat etc from Yahoo (15 min)
+    const yahooComm = {
+      'WTI OIL':'CL=F','BRENT':'BZ=F','NAT GAS':'NG=F',
+      'COPPER':'HG=F','WHEAT':'ZW=F','CORN':'ZC=F',
+      'COTTON':'CT=F','PLATINUM':'PL=F',
+    };
+    final result = <String, Map<String, dynamic>>{};
+
+    // Add metals first (real-time from GoldAPI)
+    for (final e in metals.entries) {
+      result[e.key] = {
+        'price':     e.value['price']     ?? 0.0,
+        'change':    e.value['change']    ?? 0.0,
+        'changePct': e.value['changePct'] ?? 0.0,
+        'spark':     <double>[],
+      };
+    }
+
+    // Add Yahoo commodities
+    for (final e in yahooComm.entries) {
+      if (result.containsKey(e.key)) continue; // skip if already from GoldAPI
+      final d = await getYahooQuote(e.value);
+      if (d.isNotEmpty) result[e.key] = d;
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+    return result;
+  }
+
+  Future<Map<String, Map<String, dynamic>>> getFuturesData() async {
+    const fut = {
+      'ES1! SPX':'ES=F','NQ1! NAS':'NQ=F','GC1! GOLD':'GC=F','CL1! OIL':'CL=F',
+      'ZB1! BOND':'ZB=F','SI1! SILV':'SI=F','HG1! COP':'HG=F','YM1! DOW':'YM=F',
+    };
+    final r = <String, Map<String, dynamic>>{};
+    for (final e in fut.entries) {
+      final d = await getYahooQuote(e.value);
+      if (d.isNotEmpty) r[e.key] = d;
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+    return r;
+  }
+
+  Future<Map<String, dynamic>> getTiingoQuote(String symbol) async {
+    try {
+      final res = await _client
+          .get(Uri.parse('/iex/='), headers: _h)
+          .timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) {
+        final list = json.decode(res.body) as List?;
+        if (list != null && list.isNotEmpty) {
+          final q = list[0];
+          final p = (q['last']      as num?)?.toDouble() ?? 0.0;
+          final v = (q['prevClose'] as num?)?.toDouble() ?? 0.0;
+          final c = p - v;
+          return {'price': p, 'change': c, 'changePct': v > 0 ? (c / v) * 100 : 0.0};
+        }
+      }
+    } catch (e) { print('Tiingo (): $e'); }
+    return {};
+  }
+

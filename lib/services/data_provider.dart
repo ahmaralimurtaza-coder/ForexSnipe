@@ -133,18 +133,9 @@ class DataProvider extends ChangeNotifier {
       _pairs = _pairs.map((p) {
         if (p.category != 'Forex') return p;
         double np = 0;
-        switch (p.pair) {
-          case 'EUR/USD': np = _api.getPairPrice(rates, 'EUR', 'USD'); break;
-          case 'GBP/USD': np = _api.getPairPrice(rates, 'GBP', 'USD'); break;
-          case 'USD/JPY': np = _api.getPairPrice(rates, 'USD', 'JPY'); break;
-          case 'AUD/USD': np = _api.getPairPrice(rates, 'AUD', 'USD'); break;
-          case 'USD/CAD': np = _api.getPairPrice(rates, 'USD', 'CAD'); break;
-          case 'USD/CHF': np = _api.getPairPrice(rates, 'USD', 'CHF'); break;
-          case 'NZD/USD': np = _api.getPairPrice(rates, 'NZD', 'USD'); break;
-          case 'EUR/GBP': np = _api.getPairPrice(rates, 'EUR', 'GBP'); break;
-          case 'USD/TRY': np = _api.getPairPrice(rates, 'USD', 'TRY'); break;
-          case 'USD/ZAR': np = _api.getPairPrice(rates, 'USD', 'ZAR'); break;
-          default: return _jitter(p);
+        final parts = p.pair.split('/');
+        if (parts.length == 2) {
+          np = _api.getPairPrice(rates, parts[0], parts[1]);
         }
         if (np <= 0) return _jitter(p);
         final prev   = _prevPrices[p.pair] ?? p.price;
@@ -210,7 +201,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   Future<void> _fetchStocks() async {
-    const stocks = ['AAPL','TSLA','NVDA','GOOGL','MSFT','AMZN','META','NFLX','JPM','BABA'];
+    const stocks = ['AAPL','TSLA','NVDA','GOOGL','MSFT','AMZN','META','NFLX','JPM','BABA','V','MA','JNJ','WMT','PG','HD','DIS','BAC','XOM','KO','PEP','COST','ORCL','ADBE','CRM','INTC','AMD','CSCO','PFE','NKE'];
     for (final sym in stocks) {
       try {
         var d = await _api.getTiingoQuote(sym);
@@ -472,10 +463,17 @@ class DataProvider extends ChangeNotifier {
         'EURO FX': 'EUR/USD', 'BRITISH POUND': 'GBP/USD',
         'JAPANESE YEN': 'USD/JPY', 'AUSTRALIAN DOLLAR': 'AUD/USD',
         'CANADIAN DOLLAR': 'USD/CAD', 'SWISS FRANC': 'USD/CHF',
+        'NEW ZEALAND DOLLAR': 'NZD/USD', 'MEXICAN PESO': 'USD/MXN',
+        'SOUTH AFRICAN RAND': 'USD/ZAR', 'BRAZILIAN REAL': 'USD/BRL',
+        'INDIAN RUPEE': 'USD/INR',
       }));
       list.addAll(_parseCot(await _api.getCommodityCot(), 'Commodities', {
         'GOLD': 'XAU/USD', 'SILVER': 'XAG/USD',
         'CRUDE OIL': 'WTI OIL', 'WHEAT': 'WHEAT', 'CORN': 'CORN',
+        'PALLADIUM': 'PALLADIUM', 'SOYBEAN': 'SOYBEANS', 'SUGAR': 'SUGAR',
+        'COFFEE': 'COFFEE', 'COCOA': 'COCOA', 'OATS': 'OATS',
+        'LEAN HOGS': 'LEAN HOGS', 'LIVE CATTLE': 'LIVE CATTLE',
+        'ROUGH RICE': 'ROUGH RICE', 'LUMBER': 'LUMBER',
       }));
       list.addAll(_parseCot(await _api.getIndicesCot(), 'Indices', {
         'S&P 500': 'S&P 500', 'NASDAQ': 'NASDAQ', 'DOW JONES': 'DOW JONES', 'NIKKEI': 'NIKKEI',
@@ -590,18 +588,118 @@ class DataProvider extends ChangeNotifier {
   List<String> _det(String t, String cat) {
     final s = t.toLowerCase();
     final p = <String>[];
-    if (s.contains('euro')    || s.contains('eur'))   p.add('EUR/USD');
-    if (s.contains('pound')   || s.contains('gbp'))   p.add('GBP/USD');
-    if (s.contains('yen')     || s.contains('japan')) p.add('USD/JPY');
-    if (s.contains('bitcoin') || s.contains('btc'))   p.add('BTC/USD');
-    if (s.contains('ethereum')|| s.contains('eth'))   p.add('ETH/USD');
-    if (s.contains('gold')    || s.contains('xau'))   p.add('XAU/USD');
-    if (s.contains('oil')     || s.contains('crude')) p.add('WTI OIL');
-    if (s.contains('s&p')     || s.contains('spx'))   p.add('S&P 500');
-    if (s.contains('nasdaq'))                         p.add('NASDAQ');
-    if (s.contains('apple')   || s.contains('aapl'))  p.add('AAPL');
-    if (s.contains('tesla')   || s.contains('tsla'))  p.add('TSLA');
-    if (s.contains('nvidia')  || s.contains('nvda'))  p.add('NVDA');
+    // Forex
+    if (s.contains('euro')     || s.contains(' eur '))  p.add('EUR/USD');
+    if (s.contains('pound')    || s.contains('sterling'))p.add('GBP/USD');
+    if (s.contains('yen')      || s.contains('japan'))  p.add('USD/JPY');
+    if (s.contains('aussie')   || s.contains('australian dollar')) p.add('AUD/USD');
+    if (s.contains('loonie')   || s.contains('canadian dollar'))   p.add('USD/CAD');
+    if (s.contains('swiss franc') || s.contains('franc')) p.add('USD/CHF');
+    if (s.contains('kiwi')     || s.contains('new zealand')) p.add('NZD/USD');
+    if (s.contains('turkish lira') || s.contains('lira')) p.add('USD/TRY');
+    if (s.contains('rand')     || s.contains('south africa')) p.add('USD/ZAR');
+    if (s.contains('peso')     || s.contains('mexican')) p.add('USD/MXN');
+    if (s.contains('rupee')    || s.contains('india'))  p.add('USD/INR');
+    if (s.contains('real')     || s.contains('brazil')) p.add('USD/BRL');
+    if (s.contains('ruble')    || s.contains('russia')) p.add('USD/RUB');
+    if (s.contains('yuan')     || s.contains('renminbi') || s.contains('china')) p.add('USD/CNH');
+    if (s.contains('krona')    || s.contains('sweden'))  p.add('USD/SEK');
+    if (s.contains('krone')    || s.contains('norway'))  p.add('USD/NOK');
+    if (s.contains('zloty')    || s.contains('poland'))  p.add('USD/PLN');
+    if (s.contains('rupiah')   || s.contains('indonesia')) p.add('USD/IDR');
+    if (s.contains('won')      || s.contains('korea'))   p.add('USD/KRW');
+    // Crypto
+    if (s.contains('bitcoin')  || s.contains('btc'))    p.add('BTC/USD');
+    if (s.contains('ethereum') || s.contains(' eth '))  p.add('ETH/USD');
+    if (s.contains('binance')  || s.contains(' bnb '))  p.add('BNB/USD');
+    if (s.contains('solana')   || s.contains(' sol '))  p.add('SOL/USD');
+    if (s.contains('ripple')   || s.contains(' xrp '))  p.add('XRP/USD');
+    if (s.contains('cardano')  || s.contains(' ada '))  p.add('ADA/USD');
+    if (s.contains('dogecoin') || s.contains('doge'))   p.add('DOGE');
+    if (s.contains('avalanche')|| s.contains('avax'))   p.add('AVAX');
+    if (s.contains('chainlink')|| s.contains(' link '))  p.add('LINK');
+    if (s.contains('polkadot') || s.contains(' dot '))  p.add('DOT');
+    if (s.contains('polygon')  || s.contains('matic'))  p.add('MATIC');
+    if (s.contains('litecoin') || s.contains(' ltc '))  p.add('LTC');
+    if (s.contains('tron')     || s.contains(' trx '))  p.add('TRX');
+    if (s.contains('shiba'))                            p.add('SHIB');
+    if (s.contains('cosmos')   || s.contains('atom'))   p.add('ATOM');
+    if (s.contains('uniswap')  || s.contains(' uni '))  p.add('UNI');
+    if (s.contains('stellar')  || s.contains(' xlm '))  p.add('XLM');
+    if (s.contains('filecoin') || s.contains(' fil '))  p.add('FIL');
+    if (s.contains('aptos')    || s.contains(' apt '))  p.add('APT');
+    if (s.contains('arbitrum') || s.contains(' arb '))  p.add('ARB');
+    if (s.contains('optimism'))                         p.add('OP');
+    if (s.contains('near protocol') || s.contains(' near ')) p.add('NEAR');
+    if (s.contains('hedera')   || s.contains('hbar'))   p.add('HBAR');
+    if (s.contains('vechain')  || s.contains(' vet '))  p.add('VET');
+    if (s.contains('algorand') || s.contains('algo'))   p.add('ALGO');
+    if (s.contains('sandbox'))                          p.add('SAND');
+    if (s.contains('decentraland') || s.contains('mana')) p.add('MANA');
+    if (s.contains('aave'))                             p.add('AAVE');
+    // Commodities
+    if (s.contains('gold')     || s.contains('xau'))    p.add('XAU/USD');
+    if (s.contains('silver')   || s.contains('xag'))    p.add('XAG/USD');
+    if (s.contains('platinum'))                         p.add('PLATINUM');
+    if (s.contains('palladium'))                        p.add('PALLADIUM');
+    if (s.contains('crude')    || (s.contains('oil') && !s.contains('brent'))) p.add('WTI OIL');
+    if (s.contains('brent'))                            p.add('BRENT');
+    if (s.contains('natural gas') || s.contains('nat gas')) p.add('NAT GAS');
+    if (s.contains('copper'))                           p.add('COPPER');
+    if (s.contains('wheat'))                            p.add('WHEAT');
+    if (s.contains('corn'))                             p.add('CORN');
+    if (s.contains('cotton'))                            p.add('COTTON');
+    if (s.contains('soybean'))                          p.add('SOYBEANS');
+    if (s.contains('sugar'))                            p.add('SUGAR');
+    if (s.contains('coffee'))                           p.add('COFFEE');
+    if (s.contains('cocoa'))                            p.add('COCOA');
+    // Indices
+    if (s.contains('s&p')      || s.contains('spx'))    p.add('S&P 500');
+    if (s.contains('nasdaq'))                           p.add('NASDAQ');
+    if (s.contains('dow jones')|| s.contains('dow '))   p.add('DOW JONES');
+    if (s.contains('ftse'))                             p.add('FTSE 100');
+    if (s.contains('dax'))                              p.add('DAX 40');
+    if (s.contains('nikkei'))                           p.add('NIKKEI');
+    if (s.contains('cac 40')   || s.contains('cac40'))  p.add('CAC 40');
+    if (s.contains('hang seng'))                        p.add('HANG SENG');
+    if (s.contains('asx'))                              p.add('ASX 200');
+    if (s.contains('vix')      || s.contains('volatility index')) p.add('VIX');
+    if (s.contains('kospi'))                            p.add('KOSPI');
+    if (s.contains('sensex'))                           p.add('SENSEX');
+    if (s.contains('bovespa'))                          p.add('BOVESPA');
+    if (s.contains('tsx')      || s.contains('toronto')) p.add('TSX');
+    if (s.contains('shanghai'))                         p.add('SHANGHAI');
+    // Stocks
+    if (s.contains('apple')    || s.contains('aapl'))   p.add('AAPL');
+    if (s.contains('tesla')    || s.contains('tsla'))   p.add('TSLA');
+    if (s.contains('nvidia')   || s.contains('nvda'))   p.add('NVDA');
+    if (s.contains('google')   || s.contains('alphabet'))p.add('GOOGL');
+    if (s.contains('microsoft')|| s.contains('msft'))   p.add('MSFT');
+    if (s.contains('amazon'))                           p.add('AMZN');
+    if (s.contains('meta')     || s.contains('facebook'))p.add('META');
+    if (s.contains('netflix'))                          p.add('NFLX');
+    if (s.contains('jpmorgan') || s.contains('jp morgan')) p.add('JPM');
+    if (s.contains('alibaba'))                          p.add('BABA');
+    if (s.contains('visa'))                             p.add('V');
+    if (s.contains('mastercard'))                       p.add('MA');
+    if (s.contains('johnson')) p.add('JNJ');
+    if (s.contains('walmart')) p.add('WMT');
+    if (s.contains('procter')) p.add('PG');
+    if (s.contains('home depot')) p.add('HD');
+    if (s.contains('disney'))  p.add('DIS');
+    if (s.contains('bank of america')) p.add('BAC');
+    if (s.contains('exxon'))   p.add('XOM');
+    if (s.contains('coca-cola') || s.contains('coca cola')) p.add('KO');
+    if (s.contains('pepsi'))   p.add('PEP');
+    if (s.contains('costco'))  p.add('COST');
+    if (s.contains('oracle'))  p.add('ORCL');
+    if (s.contains('adobe'))   p.add('ADBE');
+    if (s.contains('salesforce')) p.add('CRM');
+    if (s.contains('intel'))   p.add('INTC');
+    if (s.contains(' amd ')    || s.contains('advanced micro')) p.add('AMD');
+    if (s.contains('cisco'))   p.add('CSCO');
+    if (s.contains('pfizer'))  p.add('PFE');
+    if (s.contains('nike'))    p.add('NKE');
     if (p.isEmpty) p.add(cat);
     return p;
   }
@@ -692,6 +790,11 @@ class DataProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+
+
+
+
 
 
 

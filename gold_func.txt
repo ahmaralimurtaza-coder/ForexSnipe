@@ -1,0 +1,38 @@
+﻿  Future<Map<String, Map<String, dynamic>>> getPreciousMetals() async {
+    const metals = {
+      'XAU/USD': 'XAU',  // Gold
+      'XAG/USD': 'XAG',  // Silver
+      'PLATINUM': 'XPT', // Platinum
+    };
+    final result = <String, Map<String, dynamic>>{};
+    for (final e in metals.entries) {
+      final d = await getGoldApiPrice(e.value);
+      if (d.isNotEmpty) result[e.key] = d;
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    return result;
+  }
+
+  // ═══ CRYPTO ═══
+
+  Future<Map<String, dynamic>> getBinanceTicker(String symbol) async {
+    try {
+      final res = await _client
+          .get(Uri.parse('$_binance/ticker/24hr?symbol=$symbol'), headers: _h)
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final d = json.decode(res.body);
+        return {
+          'price':     double.tryParse(d['lastPrice'].toString())          ?? 0.0,
+          'changePct': double.tryParse(d['priceChangePercent'].toString()) ?? 0.0,
+          'change':    double.tryParse(d['priceChange'].toString())        ?? 0.0,
+        };
+      }
+    } catch (e) { print('Binance (): $e'); }
+    return {};
+  }
+
+  Future<List<double>> getBinanceSparkline(String symbol) async {
+    try {
+      final res = await _client
+          .get(Uri.parse('$_binance/klines?symbol=$symbol&interval=1h&limit=10'), headers: _h)

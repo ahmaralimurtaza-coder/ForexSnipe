@@ -1,0 +1,86 @@
+﻿
+  lib\services\data_provider.dart:98:    try {
+  lib\services\data_provider.dart:99:      await Future.wait([
+> lib\services\data_provider.dart:100:        _fetchForex(), _fetchCrypto(), _fetchAllNews(),
+  lib\services\data_provider.dart:101:        _fetchCalendar(), _fetchCot(), _fetchWorldEvents(), _fetchSentiment(),
+  lib\services\data_provider.dart:102:      ]);
+  lib\services\data_provider.dart:103:      await Future.wait([_fetchIndices(), _fetchCommodities(), _fetchFutures()]);
+  lib\services\data_provider.dart:104:      _fetchStocks();
+  lib\services\data_provider.dart:105:    } catch (e) { print('Init error: $e'); }
+  lib\services\data_provider.dart:106:    _isLoading = false;
+  lib\services\data_provider.dart:107:    _lastUpdated = DateTime.now();
+  lib\services\data_provider.dart:108:    notifyListeners();
+  lib\services\data_provider.dart:109:    _startTimers();
+  lib\services\data_provider.dart:110:  }
+  lib\services\data_provider.dart:111:
+  lib\services\data_provider.dart:112:  void _startTimers() {
+  lib\services\data_provider.dart:113:    _priceTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+  lib\services\data_provider.dart:114:      for (final p in _pairs) { _prevPrices[p.pair] = p.price; }
+  lib\services\data_provider.dart:115:      await Future.wait([
+> lib\services\data_provider.dart:116:        _fetchForex(), _fetchCrypto(),
+  lib\services\data_provider.dart:117:        _fetchIndices(), _fetchCommodities(), _fetchFutures(),
+  lib\services\data_provider.dart:118:      ]);
+  lib\services\data_provider.dart:119:    });
+  lib\services\data_provider.dart:120:    _newsTimer     = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchAllNews());
+  lib\services\data_provider.dart:121:    _worldTimer    = Timer.periodic(const Duration(minutes: 5),  (_) => _fetchWorldEvents());
+  lib\services\data_provider.dart:122:    _cotTimer      = Timer.periodic(const Duration(minutes: 30), (_) => _fetchCot());
+  lib\services\data_provider.dart:123:    _calendarTimer   = Timer.periodic(const Duration(minutes: 15), (_) => _fetchCalendar());
+  lib\services\data_provider.dart:124:    _sentimentTimer  = Timer.periodic(const Duration(minutes: 20), (_) => _fetchSentiment());
+  lib\services\data_provider.dart:125:  }
+  lib\services\data_provider.dart:126:
+> lib\services\data_provider.dart:127:  Future<void> _fetchForex() async {
+  lib\services\data_provider.dart:128:    try {
+  lib\services\data_provider.dart:129:      // Uses CurrencyFreaks (1 min) -> Frankfurter -> ExchangeRate cascade
+  lib\services\data_provider.dart:130:      final rates = await _api.getBestForexRates();
+  lib\services\data_provider.dart:131:      if (rates.isEmpty) return;
+  lib\services\data_provider.dart:132:
+  lib\services\data_provider.dart:133:      _pairs = _pairs.map((p) {
+  lib\services\data_provider.dart:134:        if (p.category != 'Forex') return p;
+  lib\services\data_provider.dart:135:        double np = 0;
+  lib\services\data_provider.dart:136:        switch (p.pair) {
+  lib\services\data_provider.dart:137:          case 'EUR/USD': np = _api.getPairPrice(rates, 'EUR', 'USD'); break;
+  lib\services\data_provider.dart:138:          case 'GBP/USD': np = _api.getPairPrice(rates, 'GBP', 'USD'); break;
+  lib\services\data_provider.dart:139:          case 'USD/JPY': np = _api.getPairPrice(rates, 'USD', 'JPY'); break;
+  lib\services\data_provider.dart:140:          case 'AUD/USD': np = _api.getPairPrice(rates, 'AUD', 'USD'); break;
+  lib\services\data_provider.dart:141:          case 'USD/CAD': np = _api.getPairPrice(rates, 'USD', 'CAD'); break;
+  lib\services\data_provider.dart:142:          case 'USD/CHF': np = _api.getPairPrice(rates, 'USD', 'CHF'); break;
+  lib\services\data_provider.dart:143:          case 'NZD/USD': np = _api.getPairPrice(rates, 'NZD', 'USD'); break;
+  lib\services\data_provider.dart:144:          case 'EUR/GBP': np = _api.getPairPrice(rates, 'EUR', 'GBP'); break;
+  lib\services\data_provider.dart:145:          case 'USD/TRY': np = _api.getPairPrice(rates, 'USD', 'TRY'); break;
+  lib\services\data_provider.dart:146:          case 'USD/ZAR': np = _api.getPairPrice(rates, 'USD', 'ZAR'); break;
+  lib\services\data_provider.dart:147:          default: return _jitter(p);
+  lib\services\data_provider.dart:148:        }
+  lib\services\data_provider.dart:149:        if (np <= 0) return _jitter(p);
+  lib\services\data_provider.dart:150:        final prev   = _prevPrices[p.pair] ?? p.price;
+  lib\services\data_provider.dart:151:        final change = np - prev;
+  lib\services\data_provider.dart:152:        final chgPct = prev > 0 ? (change / prev) * 100 : 0.0;
+  lib\services\data_provider.dart:644:    for (final p in _pairs) { _prevPrices[p.pair] = p.price; }
+  lib\services\data_provider.dart:645:    await Future.wait([
+> lib\services\data_provider.dart:646:      _fetchForex(), _fetchCrypto(), _fetchIndices(),
+  lib\services\data_provider.dart:647:      _fetchCommodities(), _fetchFutures(),
+  lib\services\data_provider.dart:648:      _fetchAllNews(), _fetchCalendar(), _fetchWorldEvents(),
+  lib\services\data_provider.dart:649:    ]);
+  lib\services\data_provider.dart:650:    _isLoading   = false;
+  lib\services\data_provider.dart:651:    _lastUpdated = DateTime.now();
+  lib\services\data_provider.dart:652:    notifyListeners();
+  lib\services\data_provider.dart:653:  }
+  lib\services\data_provider.dart:654:
+  lib\services\data_provider.dart:655:  Future<void> _fetchSentiment() async {
+  lib\services\data_provider.dart:656:    try {
+  lib\services\data_provider.dart:657:      final session = await _api.loginMyfxbook();
+  lib\services\data_provider.dart:658:      if (session == null) { print('Sentiment: myfxbook login failed'); return; }
+  lib\services\data_provider.dart:659:      final res = await _api.fetchMyfxbookSentiment(session);
+  lib\services\data_provider.dart:660:      if (res.statusCode == 200) {
+  lib\services\data_provider.dart:661:        final data = json.decode(res.body);
+  lib\services\data_provider.dart:662:        final symbols = data['symbols'] as List? ?? [];
+  lib\services\data_provider.dart:663:        final list = <SentimentData>[];
+  lib\services\data_provider.dart:664:        for (final s in symbols) {
+  lib\services\data_provider.dart:665:          final name = (s['name'] as String? ?? '').toUpperCase();
+  lib\services\data_provider.dart:666:          final longPct = (s['longPercentage'] as num?)?.toDouble() ?? 50.0;
+  lib\services\data_provider.dart:667:          final shortPct = (s['shortPercentage'] as num?)?.toDouble() ?? 50.0;
+  lib\services\data_provider.dart:668:          String cat = 'Forex';
+  lib\services\data_provider.dart:669:          if (['BTCUSD','ETHUSD','LTCUSD','XRPUSD'].contains(name)) cat = 'Crypto';
+  lib\services\data_provider.dart:670:          else if (['XAUUSD','XAGUSD','USOIL','UKOIL'].contains(name)) cat = 'Commodities';
+  lib\services\data_provider.dart:671:          else if (['SPX500','NAS100','US30','UK100','GER40','JPN225'].contains(name)) cat = 'Indices';
+
+

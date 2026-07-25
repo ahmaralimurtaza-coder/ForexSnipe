@@ -218,6 +218,11 @@ class ApiService {
       'BTC/USD':'BTCUSDT','ETH/USD':'ETHUSDT','BNB/USD':'BNBUSDT',
       'SOL/USD':'SOLUSDT','XRP/USD':'XRPUSDT','ADA/USD':'ADAUSDT',
       'DOGE':'DOGEUSDT','AVAX':'AVAXUSDT','LINK':'LINKUSDT','DOT':'DOTUSDT',
+      'MATIC':'MATICUSDT','LTC':'LTCUSDT','TRX':'TRXUSDT','SHIB':'SHIBUSDT',
+      'ATOM':'ATOMUSDT','UNI':'UNIUSDT','XLM':'XLMUSDT','ETC':'ETCUSDT',
+      'FIL':'FILUSDT','APT':'APTUSDT','ARB':'ARBUSDT','OP':'OPUSDT',
+      'NEAR':'NEARUSDT','ICP':'ICPUSDT','HBAR':'HBARUSDT','VET':'VETUSDT',
+      'ALGO':'ALGOUSDT','SAND':'SANDUSDT','MANA':'MANAUSDT','AAVE':'AAVEUSDT',
     };
     final result = <String, dynamic>{};
     try {
@@ -323,6 +328,9 @@ class ApiService {
       'S&P 500':'^GSPC','NASDAQ':'^IXIC','DOW JONES':'^DJI','FTSE 100':'^FTSE',
       'DAX 40':'^GDAXI','NIKKEI':'^N225','CAC 40':'^FCHI','HANG SENG':'^HSI',
       'ASX 200':'^AXJO','VIX':'^VIX',
+      'KOSPI':'^KS11','SENSEX':'^BSESN','BOVESPA':'^BVSP','TSX':'^GSPTSE',
+      'IBEX 35':'^IBEX','FTSE MIB':'FTSEMIB.MI','SMI':'^SSMI','AEX':'^AEX',
+      'STI':'^STI','SHANGHAI':'000001.SS',
     };
     final r = <String, Map<String, dynamic>>{};
     for (final e in idx.entries) {
@@ -342,6 +350,9 @@ class ApiService {
       'WTI OIL':'CL=F','BRENT':'BZ=F','NAT GAS':'NG=F',
       'COPPER':'HG=F','WHEAT':'ZW=F','CORN':'ZC=F',
       'COTTON':'CT=F','PLATINUM':'PL=F',
+      'PALLADIUM':'PA=F','SOYBEANS':'ZS=F','SUGAR':'SB=F','COFFEE':'KC=F',
+      'COCOA':'CC=F','OATS':'ZO=F','LEAN HOGS':'HE=F','LIVE CATTLE':'LE=F',
+      'ROUGH RICE':'ZR=F','LUMBER':'LBS=F',
     };
     final result = <String, Map<String, dynamic>>{};
 
@@ -369,6 +380,9 @@ class ApiService {
     const fut = {
       'ES1! SPX':'ES=F','NQ1! NAS':'NQ=F','GC1! GOLD':'GC=F','CL1! OIL':'CL=F',
       'ZB1! BOND':'ZB=F','SI1! SILV':'SI=F','HG1! COP':'HG=F','YM1! DOW':'YM=F',
+      'RTY1! RUS':'RTY=F','6E1! EUR':'6E=F','6B1! GBP':'6B=F','6J1! JPY':'6J=F',
+      'ZN1! 10Y':'ZN=F','ZF1! 5Y':'ZF=F','RB1! GAS':'RB=F','HO1! HEAT':'HO=F',
+      'PA1! PALL':'PA=F','PL1! PLAT':'PL=F','NG1! NGAS':'NG=F','ZS1! SOY':'ZS=F',
     };
     final r = <String, Map<String, dynamic>>{};
     for (final e in fut.entries) {
@@ -382,7 +396,7 @@ class ApiService {
   Future<Map<String, dynamic>> getTiingoQuote(String symbol) async {
     try {
       final res = await _client
-          .get(Uri.parse('/iex/='), headers: _h)
+          .get(Uri.parse('https://api.tiingo.com/iex/$symbol?token=$_tiingoKey'), headers: _h)
           .timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) {
         final list = json.decode(res.body) as List?;
@@ -415,7 +429,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getForexCot() async {
     try {
-      final where = Uri.encodeComponent("market_and_exchange_names like '%EURO FX%' OR market_and_exchange_names like '%BRITISH POUND%' OR market_and_exchange_names like '%JAPANESE YEN%' OR market_and_exchange_names like '%AUSTRALIAN DOLLAR%' OR market_and_exchange_names like '%CANADIAN DOLLAR%' OR market_and_exchange_names like '%SWISS FRANC%'"); final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=30&\$order=report_date_as_yyyy_mm_dd DESC';
+      final where = Uri.encodeComponent("market_and_exchange_names like '%EURO FX%' OR market_and_exchange_names like '%BRITISH POUND%' OR market_and_exchange_names like '%JAPANESE YEN%' OR market_and_exchange_names like '%AUSTRALIAN DOLLAR%' OR market_and_exchange_names like '%CANADIAN DOLLAR%' OR market_and_exchange_names like '%SWISS FRANC%' OR market_and_exchange_names like '%NEW ZEALAND DOLLAR%' OR market_and_exchange_names like '%MEXICAN PESO%' OR market_and_exchange_names like '%SOUTH AFRICAN RAND%' OR market_and_exchange_names like '%BRAZILIAN REAL%' OR market_and_exchange_names like '%INDIAN RUPEE%'"); final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=30&\$order=report_date_as_yyyy_mm_dd DESC';
       final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
     } catch (e) { print('ForexCOT: $e'); }
@@ -424,7 +438,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getCommodityCot() async {
     try {
-      final where = Uri.encodeComponent("market_and_exchange_names like '%GOLD%' OR market_and_exchange_names like '%SILVER%' OR market_and_exchange_names like '%CRUDE OIL%' OR market_and_exchange_names like '%WHEAT%' OR market_and_exchange_names like '%CORN%'");
+      final where = Uri.encodeComponent("market_and_exchange_names like '%GOLD%' OR market_and_exchange_names like '%SILVER%' OR market_and_exchange_names like '%CRUDE OIL%' OR market_and_exchange_names like '%WHEAT%' OR market_and_exchange_names like '%CORN%' OR market_and_exchange_names like '%PALLADIUM%' OR market_and_exchange_names like '%SOYBEAN%' OR market_and_exchange_names like '%SUGAR%' OR market_and_exchange_names like '%COFFEE%' OR market_and_exchange_names like '%COCOA%' OR market_and_exchange_names like '%OATS%' OR market_and_exchange_names like '%LEAN HOGS%' OR market_and_exchange_names like '%LIVE CATTLE%' OR market_and_exchange_names like '%ROUGH RICE%' OR market_and_exchange_names like '%LUMBER%'");
       final url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?\$where=$where&\$limit=40&\$order=report_date_as_yyyy_mm_dd DESC';
       final res = await _client.get(Uri.parse(url), headers: _h).timeout(const Duration(seconds: 25));
       if (res.statusCode == 200) return (json.decode(res.body) as List).map((e) => Map<String, dynamic>.from(e)).toList();
@@ -670,6 +684,9 @@ Future<List<Map<String, dynamic>>> getReutersNews() async {
     return [];
   }
 }
+
+
+
 
 
 
