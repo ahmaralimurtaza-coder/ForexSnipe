@@ -5,5 +5,7 @@
   "TIINGO_KEY": "your_tiingo_key_here",
   "FIXER_KEY": "your_fixer_key_here",
   "CURRENCY_FREAKS_KEY": "your_currencyfreaks_key_here",
-  "GOLD_API_KEY": "your_goldapi_key_here"
+  "GOLD_API_KEY": "your_goldapi_key_here",
+  "MYFXBOOK_EMAIL": "your_myfxbook_email_here",
+  "MYFXBOOK_PASSWORD": "your_myfxbook_password_here"
 }
