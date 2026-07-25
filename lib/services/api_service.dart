@@ -342,33 +342,17 @@ class ApiService {
   }
 
   Future<Map<String, Map<String, dynamic>>> getCommoditiesData() async {
-    // Step 1: Get Gold & Silver from GoldAPI (real-time)
-    final metals = await getPreciousMetals();
-
-    // Step 2: Get Oil, Gas, Copper, Wheat etc from Yahoo (15 min)
     const yahooComm = {
+      'XAU/USD':'GC=F','XAG/USD':'SI=F','PLATINUM':'PL=F',
       'WTI OIL':'CL=F','BRENT':'BZ=F','NAT GAS':'NG=F',
       'COPPER':'HG=F','WHEAT':'ZW=F','CORN':'ZC=F',
-      'COTTON':'CT=F','PLATINUM':'PL=F',
+      'COTTON':'CT=F',
       'PALLADIUM':'PA=F','SOYBEANS':'ZS=F','SUGAR':'SB=F','COFFEE':'KC=F',
       'COCOA':'CC=F','OATS':'ZO=F','LEAN HOGS':'HE=F','LIVE CATTLE':'LE=F',
       'ROUGH RICE':'ZR=F','LUMBER':'LBS=F',
     };
     final result = <String, Map<String, dynamic>>{};
-
-    // Add metals first (real-time from GoldAPI)
-    for (final e in metals.entries) {
-      result[e.key] = {
-        'price':     e.value['price']     ?? 0.0,
-        'change':    e.value['change']    ?? 0.0,
-        'changePct': e.value['changePct'] ?? 0.0,
-        'spark':     <double>[],
-      };
-    }
-
-    // Add Yahoo commodities
     for (final e in yahooComm.entries) {
-      if (result.containsKey(e.key)) continue; // skip if already from GoldAPI
       final d = await getYahooQuote(e.value);
       if (d.isNotEmpty) result[e.key] = d;
       await Future.delayed(const Duration(milliseconds: 300));
@@ -684,6 +668,8 @@ Future<List<Map<String, dynamic>>> getReutersNews() async {
     return [];
   }
 }
+
+
 
 
 
