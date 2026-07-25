@@ -148,10 +148,11 @@ class _OiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalLong  = data.nonCommercialLong + data.commercialLong + data.smallTraderLong;
-    final totalShort = data.nonCommercialShort + data.commercialShort + data.smallTraderShort;
-    final total = totalLong + totalShort;
-    final longPct = total > 0 ? totalLong / total : 0.5;
+    // Total long always equals total short in any futures market (zero-sum),
+    // so we show Non-Commercial (speculator) positioning instead - the
+    // meaningful signal, same approach the COT tab uses.
+    final ncTotal = data.nonCommercialLong + data.nonCommercialShort;
+    final longPct = ncTotal > 0 ? data.nonCommercialLong / ncTotal : 0.5;
 
     return GlowCard(
       glowColor: color,
@@ -187,11 +188,14 @@ class _OiCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('${(longPct * 100).toStringAsFixed(1)}% Long', style: const TextStyle(fontSize: 10.5, color: AppColors.green, fontWeight: FontWeight.w700)),
-          Text('${(100 - longPct * 100).toStringAsFixed(1)}% Short', style: const TextStyle(fontSize: 10.5, color: AppColors.red, fontWeight: FontWeight.w700)),
+          Text('Spec. Long ${(longPct * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 10.5, color: AppColors.green, fontWeight: FontWeight.w700)),
+          Text('Spec. Short ${(100 - longPct * 100).toStringAsFixed(1)}%', style: const TextStyle(fontSize: 10.5, color: AppColors.red, fontWeight: FontWeight.w700)),
         ]),
       ]),
     );
   }
 }
+
+
+
 

@@ -503,6 +503,8 @@ class DataProvider extends ChangeNotifier {
     for (final item in raw) {
       try {
         final name = (item['market_and_exchange_names'] as String? ?? '').toUpperCase();
+        if (name.contains('XRATE')) continue; // skip cross-rate contracts (e.g. EURO FX/BRITISH POUND XRATE)
+        if (name.contains('MICRO') || name.contains('PAX') || name.contains('PERP') || name.contains('COINBASE')) continue; // skip micro/crypto-collateralized variant contracts (e.g. PAX GOLD PERP, MICRO GOLD)
         String? pair;
         nameMap.forEach((k, v) { if (name.contains(k.toUpperCase()) && pair == null) pair = v; });
         if (pair == null || seen.contains(pair)) continue;
@@ -790,6 +792,8 @@ class DataProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+
+
 
 
 
