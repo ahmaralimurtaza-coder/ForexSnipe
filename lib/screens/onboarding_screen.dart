@@ -22,8 +22,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       title: 'Snipe the Market\nWith Precision',
       color: AppColors.green,
       points: [
-        '\u{2705}  Real-time prices for Forex, Stocks,\n      Crypto, Indices & Commodities',
-        '\u{2705}  Animated live ticker with 50+ instruments',
+        '\u{2705}  Real-time prices across 170+ instruments\n      Forex, Stocks, Crypto, Indices, Commodities & Futures',
+        '\u{2705}  Animated live ticker with 170+ instruments',
         '\u{2705}  Sparkline mini-charts on every card',
         '\u{2705}  Auto-updates every 3 seconds live',
         '\u{2705}  Powered by Finnhub, Twelve Data\n      & Alpha Vantage \u{2014} all FREE',
@@ -37,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         '\u{2705}  Official CFTC data \u{2014} 100% free',
         '\u{2705}  See what hedge funds &\n      institutions are doing weekly',
         '\u{2705}  Net positioning donut charts\n      for all asset classes',
-        '\u{2705}  Forex, Indices, Crypto, Stocks,\n      Commodities & Futures COT data',
+        '\u{2705}  Real CFTC data for major forex, exotics\n      & 15 commodities - honest coverage only',
         '\u{2705}  Updated every Friday via\n      CFTC.gov & Barchart direct',
       ],
     ),
@@ -378,3 +378,5 @@ class _OnboardPage {
     required this.points,
   });
 }
+
+
