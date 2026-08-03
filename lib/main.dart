@@ -8,7 +8,6 @@ import 'theme/theme_provider.dart';
 import 'services/data_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/prices_screen.dart';
 import 'screens/cot_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/news_screen.dart';
@@ -18,6 +17,7 @@ import 'screens/barchart_screen.dart';
 import 'screens/ai_screen.dart';
 import 'screens/sources_screen.dart';
 import 'screens/quiz_screen.dart';
+import 'screens/lot_calculator_screen.dart';
 import 'widgets/common_widgets.dart';
 
 void main() {
@@ -99,26 +99,25 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   final _tabs = const [
-    _Tab(icon: Icons.show_chart,              label: 'Prices'),
+    _Tab(icon: Icons.smart_toy_outlined,      label: 'AI Chat'),
+    _Tab(icon: Icons.calculate_outlined,      label: 'Lot Calc'),
     _Tab(icon: Icons.people_alt,              label: 'COT'),
     _Tab(icon: Icons.calendar_month,          label: 'Calendar'),
     _Tab(icon: Icons.newspaper,               label: 'News'),
     _Tab(icon: Icons.bar_chart,                label: 'Open Int.'),
     _Tab(icon: Icons.sentiment_satisfied_alt, label: 'Sentiment'),
-
     _Tab(icon: Icons.quiz_outlined,            label: 'Quiz'),
-    _Tab(icon: Icons.smart_toy_outlined,      label: 'AI Chat'),
     _Tab(icon: Icons.hub_outlined,            label: 'Sources'),
   ];
 
   final _screens = const [
-    PricesScreen(), CotScreen(), CalendarScreen(), NewsScreen(), OpenInterestScreen(),
-    SentimentScreen(), QuizScreen(), AiScreen(), SourcesScreen(),
+    AiScreen(), LotCalculatorScreen(), CotScreen(), CalendarScreen(), NewsScreen(), OpenInterestScreen(),
+    SentimentScreen(), QuizScreen(), SourcesScreen(),
   ];
 
   final _titles = const [
-    'Live Prices', 'COT Report', 'Economic Calendar', 'Market News', 'Open Interest',
-    'Sentiment', 'Trading Quiz', 'AI Analyst', 'Data Sources',
+    'AI Analyst', 'Lot Calculator', 'COT Report', 'Economic Calendar', 'Market News', 'Open Interest',
+    'Sentiment', 'Trading Quiz', 'Data Sources',
   ];
 
   @override
@@ -258,6 +257,12 @@ class _Tab {
   final String label;
   const _Tab({required this.icon, required this.label});
 }
+
+
+
+
+
+
 
 
 
