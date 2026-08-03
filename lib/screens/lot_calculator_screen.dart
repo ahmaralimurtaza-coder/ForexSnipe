@@ -16,6 +16,8 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
   final _entryCtrl   = TextEditingController();
   final _slCtrl      = TextEditingController();
   final _tpCtrl      = TextEditingController();
+  final _manualPipValueCtrl = TextEditingController();
+  bool _manualPipValue = false;
 
   String _pair = 'EUR/USD';
   bool _priceMode = false;
@@ -32,6 +34,7 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
 
   @override
   void dispose() {
+    _manualPipValueCtrl.dispose();
     _balanceCtrl.dispose(); _riskPctCtrl.dispose(); _pipsCtrl.dispose();
     _entryCtrl.dispose(); _slCtrl.dispose(); _tpCtrl.dispose();
     super.dispose();
@@ -50,8 +53,8 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
     final quote = parts[1];
     if (quote == 'USD') return 1.0;
     for (final p in allPairs) {
-      if (p.pair == '\$quote/USD') return p.price as double;
-      if (p.pair == 'USD/\$quote') { final pr = p.price as double; return pr > 0 ? 1 / pr : null; }
+      if (p.pair == '$quote/USD') return p.price as double;
+      if (p.pair == 'USD/$quote') { final pr = p.price as double; return pr > 0 ? 1 / pr : null; }
     }
     return null;
   }
@@ -91,6 +94,9 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
     }
 
     double? lots;
+    if (_manualPipValue) {
+      pipValuePerStdLot = double.tryParse(_manualPipValueCtrl.text);
+    }
     if (pips != null && pips > 0 && pipValuePerStdLot != null && pipValuePerStdLot > 0 && riskAmount > 0) {
       lots = riskAmount / (pips * pipValuePerStdLot);
     }
@@ -117,7 +123,7 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
             const SizedBox(height: 12),
             _labeledField('Risk per Trade (%)', _riskPctCtrl, isDark),
             const SizedBox(height: 8),
-            Text('Risking \\\$\${riskAmount.toStringAsFixed(2)} on this trade',
+            Text('Risking \$${riskAmount.toStringAsFixed(2)} on this trade',
                 style: TextStyle(fontSize: 11.5, color: AppColors.gold, fontWeight: FontWeight.w600)),
           ]),
           const SizedBox(height: 14),
@@ -151,8 +157,30 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text('Current price: \${refPrice.toStringAsFixed(refPrice > 50 ? 2 : 4)}  \u2022  \$category',
+            Text('Current price: ${refPrice.toStringAsFixed(refPrice > 50 ? 2 : 4)}  \u2022  $category',
                 style: TextStyle(fontSize: 11, color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
+          ]),
+          const SizedBox(height: 14),
+
+          _card(isDark, 'PIP VALUE', [
+            Row(children: [
+              Expanded(child: _modeButton('Auto (Live)', !_manualPipValue, () => setState(() => _manualPipValue = false), isDark)),
+              const SizedBox(width: 8),
+              Expanded(child: _modeButton('Manual', _manualPipValue, () => setState(() => _manualPipValue = true), isDark)),
+            ]),
+            if (_manualPipValue) ...[
+              const SizedBox(height: 12),
+              _labeledField('Pip Value per Standard Lot (\$)', _manualPipValueCtrl, isDark),
+              const SizedBox(height: 6),
+              Text('No live data needed - enter the pip value your broker quotes.',
+                  style: TextStyle(fontSize: 10.5, color: isDark ? AppColors.mutedDark : AppColors.mutedLight)),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(pipValuePerStdLot != null
+                  ? 'Live pip value: ${pipValuePerStdLot.toStringAsFixed(2)} per standard lot'
+                  : 'Waiting for live price data...',
+                  style: TextStyle(fontSize: 11, color: AppColors.cyan, fontWeight: FontWeight.w600)),
+            ],
           ]),
           const SizedBox(height: 14),
 
@@ -173,12 +201,12 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
               _labeledField('Take Profit Price (optional)', _tpCtrl, isDark),
               if (pips != null) ...[
                 const SizedBox(height: 8),
-                Text('= \${pips.toStringAsFixed(1)} pips/points',
+                Text('= ${pips.toStringAsFixed(1)} pips/points',
                     style: TextStyle(fontSize: 11.5, color: AppColors.cyan, fontWeight: FontWeight.w700)),
               ],
               if (rr != null) ...[
                 const SizedBox(height: 4),
-                Text('Risk:Reward = 1:\${rr.toStringAsFixed(2)}',
+                Text('Risk:Reward = 1:${rr.toStringAsFixed(2)}',
                     style: TextStyle(fontSize: 11.5, color: AppColors.green, fontWeight: FontWeight.w700)),
               ],
             ],
@@ -293,5 +321,10 @@ class _LotCalculatorScreenState extends State<LotCalculatorScreen> {
     );
   }
 }
+
+
+
+
+
 
 
